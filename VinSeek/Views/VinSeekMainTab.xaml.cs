@@ -12,17 +12,25 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Be.Windows.Forms;
 
-namespace VinSeek
+namespace VinSeek.Views
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for VinSeekMainView.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class VinSeekMainTab : UserControl
     {
-        public MainWindow()
+        public VinSeekMainTab()
         {
             InitializeComponent();
+        }
+
+        public void LoadData(string fileName)
+        {
+            /*DynamicFileByteProvider dynamicFileByteProvider = new DynamicFileByteProvider(fileName);
+            HexEditor.ByteProvider = dynamicFileByteProvider;*/
+            HexEditor.FileName = fileName;
         }
     }
 }

@@ -1,0 +1,172 @@
+﻿<UserControl x:Class="VinSeek.Views.VinSeekMainTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             xmlns:beforms="clr-namespace:Be.Windows.Forms;assembly=Be.Windows.Forms.HexBox"
+             xmlns:control="clr-namespace:WpfHexaEditor;assembly=WPFHexaEditor"
+             xmlns:local="clr-namespace:VinSeek.Views"
+             mc:Ignorable="d" 
+             d:DesignHeight="800" d:DesignWidth="900">
+    <Grid>
+        <DockPanel VerticalAlignment="Stretch">
+            <DockPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="5" />
+                        <ColumnDefinition Width="300" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="0*"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <DockPanel Grid.Row="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch">
+                            <xctk:WatermarkTextBox x:Name="FilterEntry"  Watermark="Apply a filter ..." Height="24" DockPanel.Dock="Right" HorizontalAlignment="Stretch" TextWrapping="Wrap" VerticalAlignment="Top" AutomationProperties.Name="FilterBox"/>
+                        </DockPanel>
+                        <ListView x:Name="PacketListView" Margin="0,20,0,0" Grid.ColumnSpan="2">
+                            <ListView.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Edit Note"/>
+                                    <Separator/>
+                                    <MenuItem Header="Export to DAT"/>
+                                    <MenuItem Header="Export Set" />
+                                    <MenuItem Header="Build Set from selected Packets"/>
+                                    <MenuItem Header="Export selected sets for Replay" />
+                                    <Separator/>
+                                    <MenuItem Header="Apply specific struct to packet"/>
+                                    <MenuItem Header="Run specific scripts on packets"/>
+                                </ContextMenu>
+                            </ListView.ContextMenu>
+                            <ListView.Resources>
+                                <Style TargetType="{x:Type ListViewItem}">
+                                    <Style.Triggers>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding Direction}"
+                                                           Value="S"/>
+                                                <Condition Binding="{Binding Set}"
+                                                           Value="0"/>
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Background"
+                                                Value="#FFFFC65F" />
+                                        </MultiDataTrigger>
+
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding Direction}"
+                                                           Value="S"/>
+                                                <Condition Binding="{Binding Set}"
+                                                           Value="1"/>
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Background"
+                                                    Value="#FFFDDA99" />
+                                        </MultiDataTrigger>
+
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding Direction}"
+                                                           Value="C"/>
+                                                <Condition Binding="{Binding Set}"
+                                                           Value="0"/>
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Background"
+                                                    Value="#FF8CE2FF" />
+                                        </MultiDataTrigger>
+
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding Direction}"
+                                                           Value="C"/>
+                                                <Condition Binding="{Binding Set}"
+                                                           Value="1"/>
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Background"
+                                                    Value="#FFB7E3FF" />
+                                        </MultiDataTrigger>
+
+                                        <DataTrigger Binding="{Binding IsVisible}" Value="False">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ListView.Resources>
+                            <!--<ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="S/C" DisplayMemberBinding="{Binding Direction}"/>
+                                    <GridViewColumn Header="Message" Width="52" DisplayMemberBinding="{Binding Message}"/>
+                                    <GridViewColumn Header="Name" Width="230" DisplayMemberBinding="{Binding Name}"/>
+                                    <GridViewColumn Header="Route ID" DisplayMemberBinding="{Binding RouteID}"/>
+                                    <GridViewColumn Header="IsForSelf" DisplayMemberBinding="{Binding IsForSelf}"/>
+                                    <GridViewColumn Header="Comment" Width="390" DisplayMemberBinding="{Binding Comment}"/>
+                                    <GridViewColumn Header="Note" Width="380" DisplayMemberBinding="{Binding Note}"/>
+                                    <GridViewColumn Header="Size" Width="50" DisplayMemberBinding="{Binding Size}"/>
+                                    <GridViewColumn Header="Set" DisplayMemberBinding="{Binding Set}"/>
+                                    <GridViewColumn Header="Connection" DisplayMemberBinding="{Binding Connection}"/>
+                                    <GridViewColumn Header="Timestamp" DisplayMemberBinding="{Binding Timestamp}"/>
+                                </GridView>
+                            </ListView.View>-->
+                        </ListView>
+                        <!-- <TextBlock FontSize="55" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap">Top</TextBlock> -->
+                        <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" Grid.ColumnSpan="2" />
+
+                        <!-- <TextBlock Grid.Row="2" FontSize="55" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap">Bottom</TextBlock> -->
+
+                        <Grid Grid.Row="2" Grid.ColumnSpan="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="1" />
+                            </Grid.RowDefinitions>
+
+                            <DockPanel Grid.Row="0" Grid.ColumnSpan="25">
+                                <!--<views:DataTypeView x:Name="DataTypeViewer" MinWidth="290" DockPanel.Dock="Right" />
+                                <beforms:WpfHexBox x:Name="HexEditor" FontSize="12" FontFamily="MS Gothic" />-->
+                                <control:HexEditor x:Name="HexEditor" FontSize="13"/>
+                            </DockPanel>
+                        </Grid>
+                    </Grid>
+                    <GridSplitter Grid.Column="1" Grid.RowSpan="2"  Width="5" HorizontalAlignment="Stretch" />
+                    <ListView Grid.Column="2" DockPanel.Dock="Top" x:Name="StructListView" FontFamily="MS Gothic" Margin="0,0,0,0">
+                        <ListView.Resources>
+                            <Style TargetType="{x:Type ListViewItem}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsVisible}" Value="False">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ListView.Resources>
+                        <ListView.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem x:Name="CopyValue" Header="Copy Value (Ctrl+C)" ></MenuItem>
+                                <MenuItem x:Name="CopyDataTypeValue" Header="Copy All Cols (Ctrl+Shift+C)" ></MenuItem>
+                            </ContextMenu>
+                        </ListView.ContextMenu>
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Datatype" DisplayMemberBinding="{Binding DataTypeCol}"/>
+                                <GridViewColumn Header="Name" DisplayMemberBinding="{Binding NameCol}"/>
+                                <GridViewColumn Header="Value" Width="110" DisplayMemberBinding="{Binding ValueCol}"/>
+                                <GridViewColumn Header="Offset" DisplayMemberBinding="{Binding OffsetCol}"/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </Grid>
+            </DockPanel>
+        </DockPanel>
+    </Grid>
+</UserControl>
