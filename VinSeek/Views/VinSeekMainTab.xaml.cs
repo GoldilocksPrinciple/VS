@@ -17,7 +17,7 @@ using Be.Windows.Forms;
 namespace VinSeek.Views
 {
     /// <summary>
-    /// Interaction logic for VinSeekMainView.xaml
+    /// Interaction logic for VinSeekMainTab.xaml
     /// </summary>
     public partial class VinSeekMainTab : UserControl
     {
@@ -28,8 +28,11 @@ namespace VinSeek.Views
 
         public void LoadData(string fileName)
         {
+            // Be.Windows.Forms.Hexbox
             /*DynamicFileByteProvider dynamicFileByteProvider = new DynamicFileByteProvider(fileName);
             HexEditor.ByteProvider = dynamicFileByteProvider;*/
+
+            // WpfHexaEditor
             HexEditor.FileName = fileName;
         }
     }

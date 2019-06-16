@@ -5,41 +5,73 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:VinSeek"
         xmlns:views="clr-namespace:VinSeek.Views"
+        xmlns:utils="clr-namespace:VinSeek.Utils"
         mc:Ignorable="d"
-        Title="VinSeek" Height="768" Width="1366">
+        Title="VinSeek" Height="900" Width="1600">
     <Window.Resources>
         <DataTemplate DataType="{x:Type views:VinSeekMainTab}">
             <views:VinSeekMainTab/>
         </DataTemplate>
     </Window.Resources>
+    <Window.CommandBindings>
+        <CommandBinding Command="{x:Static utils:ShortcutCommands.NewTab}" Executed="NewTabCommandBinding_Executed" />
+        <CommandBinding Command="{x:Static utils:ShortcutCommands.OpenFile}" Executed="OpenFileCommandBinding_Executed" />
+        <CommandBinding Command="{x:Static utils:ShortcutCommands.SaveFile}" Executed="SaveFileCommandBinding_Executed" />
+        <CommandBinding Command="{x:Static utils:ShortcutCommands.SaveFileAs}" Executed="SaveFileAsCommandBinding_Executed" />
+        <CommandBinding Command="{x:Static utils:ShortcutCommands.CloseTab}" Executed="CloseTabCommandBinding_Executed" />
+        <CommandBinding Command="{x:Static utils:ShortcutCommands.CloseAllTab}" Executed="CloseAllTabCommandBinding_Executed" />
+        <CommandBinding Command="{x:Static utils:ShortcutCommands.ExitApplication}" Executed="ExitApplicationCommandBinding_Executed" />
+        <CommandBinding Command="{x:Static utils:ShortcutCommands.Capture}" Executed="CaptureCommandBinding_Executed" />
+        <CommandBinding Command="{x:Static utils:ShortcutCommands.OpenScript}" Executed="OpenScriptCommandBinding_Executed" />
+        <CommandBinding Command="{x:Static utils:ShortcutCommands.EditScript}" Executed="EditScriptCommandBinding_Executed" />
+        <CommandBinding Command="{x:Static utils:ShortcutCommands.RunScript}" Executed="RunScriptCommandBinding_Executed" />
+        <CommandBinding Command="{x:Static utils:ShortcutCommands.OpenTemplate}" Executed="OpenTemplateCommandBinding_Executed" />
+        <CommandBinding Command="{x:Static utils:ShortcutCommands.EditTemplate}" Executed="EditTemplateCommandBinding_Executed" />
+        <CommandBinding Command="{x:Static utils:ShortcutCommands.RunTemplate}" Executed="RunTemplateCommandBinding_Executed" />
+    </Window.CommandBindings>
+    <Window.InputBindings>
+        <KeyBinding Gesture="Ctrl+N" Command="{x:Static utils:ShortcutCommands.NewTab}" />
+        <KeyBinding Gesture="Ctrl+O" Command="{x:Static utils:ShortcutCommands.OpenFile}" />
+        <KeyBinding Gesture="Ctrl+S" Command="{x:Static utils:ShortcutCommands.SaveFile}" />
+        <KeyBinding Gesture="Ctrl+Shift+S" Command="{x:Static utils:ShortcutCommands.SaveFileAs}" />
+        <KeyBinding Gesture="Ctrl+W" Command="{x:Static utils:ShortcutCommands.CloseTab}" />
+        <KeyBinding Gesture="Ctrl+Shift+W" Command="{x:Static utils:ShortcutCommands.CloseAllTab}" />
+        <KeyBinding Gesture="Ctrl+E" Command="{x:Static utils:ShortcutCommands.Capture}" />
+        <KeyBinding Gesture="Ctrl+F7" Command="{x:Static utils:ShortcutCommands.OpenScript}" />
+        <KeyBinding Gesture="Ctrl+Shift+F7" Command="{x:Static utils:ShortcutCommands.EditScript}" />
+        <KeyBinding Key="F7" Command="{x:Static utils:ShortcutCommands.RunScript}" />
+        <KeyBinding Gesture="Ctrl+F5" Command="{x:Static utils:ShortcutCommands.OpenTemplate}" />
+        <KeyBinding Gesture="Ctrl+Shift+F5" Command="{x:Static utils:ShortcutCommands.EditTemplate}" />
+        <KeyBinding Key="F5" Command="{x:Static utils:ShortcutCommands.RunTemplate}" />
+    </Window.InputBindings>
     <Grid>
         <DockPanel>
             <Menu DockPanel.Dock="Top">
                 <MenuItem Header="File">
-                    <MenuItem Header="New Tab" InputGestureText="Ctrl+N" Click="NewTab_Click"/>
-                    <MenuItem Header="Open File(s)..." InputGestureText="Ctrl+O" Click="OpenFile_Click"/>
+                    <MenuItem Command="{x:Static utils:ShortcutCommands.NewTab}" InputGestureText="Ctrl+N" />
+                    <MenuItem Command="{x:Static utils:ShortcutCommands.OpenFile}" InputGestureText="Ctrl+O" />
                     <Separator/>
-                    <MenuItem Header="Save" InputGestureText="Ctrl+S" Click="Save_Click"/>
-                    <MenuItem Header="Save As..." InputGestureText="Ctrl+Shift+S" Click="SaveAs_Click"/>
+                    <MenuItem Command="{x:Static utils:ShortcutCommands.SaveFile}" InputGestureText="Ctrl+S" />
+                    <MenuItem Command="{x:Static utils:ShortcutCommands.SaveFileAs}" InputGestureText="Ctrl+Shift+S" />
                     <Separator/>
-                    <MenuItem Header="Close" InputGestureText="Ctrl+W" Click="Close_Click"/>
-                    <MenuItem Header="Close All" InputGestureText="Ctrl+Alt+W" Click="CloseAll_Click"/>
+                    <MenuItem Command="{x:Static utils:ShortcutCommands.CloseTab}" InputGestureText="Ctrl+W" />
+                    <MenuItem Command="{x:Static utils:ShortcutCommands.CloseAllTab}" InputGestureText="Ctrl+Alt+W" />
                     <Separator/>
-                    <MenuItem Header="Exit" Click="Exit_Click"/>
+                    <MenuItem Command="{x:Static utils:ShortcutCommands.ExitApplication}" />
                 </MenuItem>
                 <MenuItem Header="Capture">
-                    <MenuItem Header="Start" InputGestureText="Ctrl+E" />
-                    <MenuItem Header="Stop" InputGestureText="Ctrl+E" />
+                    <MenuItem Header="Start" Command="{x:Static utils:ShortcutCommands.Capture}" InputGestureText="Ctrl+E" />
+                    <MenuItem Header="Stop" Command="{x:Static utils:ShortcutCommands.Capture}" InputGestureText="Ctrl+E" />
                 </MenuItem>
                 <MenuItem Header="Scripts">
-                    <MenuItem Header="Open Script..." InputGestureText="Ctrl+F7"/>
-                    <MenuItem Header="Edit Script" InputGestureText="Ctrl+Shift+F7"/>
-                    <MenuItem Header="Run Script" InputGestureText="F7"/>
+                    <MenuItem Command="{x:Static utils:ShortcutCommands.OpenScript}" InputGestureText="Ctrl+F7" />
+                    <MenuItem Command="{x:Static utils:ShortcutCommands.EditScript}" InputGestureText="Ctrl+Shift+F7" />
+                    <MenuItem Command="{x:Static utils:ShortcutCommands.RunScript}" InputGestureText="F7" />
                 </MenuItem>
                 <MenuItem Header="Templates">
-                    <MenuItem Header="Open template..." InputGestureText="Ctrl+F5"/>
-                    <MenuItem Header="Edit template" InputGestureText="Ctrl+Shift+F5"/>
-                    <MenuItem Header="Run template" InputGestureText="F5"/>
+                    <MenuItem Command="{x:Static utils:ShortcutCommands.OpenTemplate}" InputGestureText="Ctrl+F5" />
+                    <MenuItem Command="{x:Static utils:ShortcutCommands.EditTemplate}" InputGestureText="Ctrl+Shift+F5" />
+                    <MenuItem Command="{x:Static utils:ShortcutCommands.RunTemplate}" InputGestureText="F5" />
                 </MenuItem>
                 <MenuItem Header="Help">
                     <MenuItem Header="About"/>
