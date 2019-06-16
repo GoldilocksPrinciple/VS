@@ -4,7 +4,6 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
-             xmlns:beforms="clr-namespace:Be.Windows.Forms;assembly=Be.Windows.Forms.HexBox"
              xmlns:control="clr-namespace:WpfHexaEditor;assembly=WPFHexaEditor"
              xmlns:local="clr-namespace:VinSeek.Views"
              mc:Ignorable="d" 
@@ -123,7 +122,6 @@
                             </Grid.RowDefinitions>
 
                             <DockPanel Grid.Row="0" Grid.ColumnSpan="25">
-                                <!--<beforms:WpfHexBox x:Name="HexEditor" FontSize="12" FontFamily="MS Gothic" />-->
                                 <control:HexEditor x:Name="HexEditor" FontSize="13"/>
                             </DockPanel>
                         </Grid>

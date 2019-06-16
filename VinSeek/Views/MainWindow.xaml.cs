@@ -15,7 +15,6 @@ using System.Windows.Shapes;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using System.Diagnostics;
 using System.IO;
-using Be.Windows.Forms;
 
 namespace VinSeek.Views
 {

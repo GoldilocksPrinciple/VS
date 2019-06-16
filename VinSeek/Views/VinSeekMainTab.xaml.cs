@@ -12,7 +12,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Be.Windows.Forms;
 
 namespace VinSeek.Views
 {
@@ -28,10 +27,6 @@ namespace VinSeek.Views
 
         public void LoadData(string fileName)
         {
-            // Be.Windows.Forms.Hexbox
-            /*DynamicFileByteProvider dynamicFileByteProvider = new DynamicFileByteProvider(fileName);
-            HexEditor.ByteProvider = dynamicFileByteProvider;*/
-
             // WpfHexaEditor
             HexEditor.FileName = fileName;
         }
