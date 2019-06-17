@@ -8,3 +8,6 @@ A Vindictus Packet Logger/Network Analysis Tool
 ```xaml
 NuGet Package: Install-Package WPFHexaEditor
 ```
+- Sharppcap: https://github.com/chmorgan/sharppcap
+```xaml
+NuGet Package: Install-Package SharpPcap
