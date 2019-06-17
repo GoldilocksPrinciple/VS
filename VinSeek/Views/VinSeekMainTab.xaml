@@ -33,7 +33,7 @@
                         <DockPanel Grid.Row="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch">
                             <xctk:WatermarkTextBox x:Name="FilterEntry" Watermark="Apply a filter ..." Height="30" DockPanel.Dock="Right" HorizontalAlignment="Stretch" TextWrapping="Wrap" VerticalAlignment="Top" AutomationProperties.Name="FilterBox"/>
                         </DockPanel>
-                        <ListView x:Name="PacketListView" Margin="0,20,0,0" Grid.ColumnSpan="2">
+                        <ListView x:Name="PacketListView" Margin="0,20,0,0" Grid.ColumnSpan="2" SelectionChanged="PacketListView_SelectionChanged">
                             <ListView.ContextMenu>
                                 <ContextMenu>
                                     <MenuItem Header="Edit Note"/>
@@ -102,12 +102,19 @@
                             </ListView.Resources>-->
                             <ListView.View>
                                 <GridView>
+                                    <GridViewColumn Header="Source" Width="120" DisplayMemberBinding="{Binding SourceIP}" />
+                                    <GridViewColumn Header="Destination" Width="300" DisplayMemberBinding="{Binding DestIP}" />
+                                    <GridViewColumn Header="Protocol" Width="50" DisplayMemberBinding="{Binding Protocol}" />
+                                    <GridViewColumn Header="Length" Width="380" DisplayMemberBinding="{Binding Length}" />
+                                    <!--<GridViewColumn Header="Comments" Width="368" DisplayMemberBinding="{Binding Info}" />-->
+                                </GridView>
+                                <!--<GridView>
                                     <GridViewColumn Header="Opcode" Width="120" />
                                     <GridViewColumn Header="Name" Width="300" />
                                     <GridViewColumn Header="Length" Width="100" />
                                     <GridViewColumn Header="GUID" Width="380" />
                                     <GridViewColumn Header="Comments/Notes" Width="368" />
-                                </GridView>
+                                </GridView>-->
                             </ListView.View>
                         </ListView>
                         <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" Grid.ColumnSpan="2" />
@@ -122,7 +129,7 @@
                             </Grid.RowDefinitions>
 
                             <DockPanel Grid.Row="0" Grid.ColumnSpan="25">
-                                <control:HexEditor x:Name="HexEditor" FontSize="13"/>
+                                <control:HexEditor x:Name="HexEditor" FontSize="13" />
                             </DockPanel>
                         </Grid>
                     </Grid>

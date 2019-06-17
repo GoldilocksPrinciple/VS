@@ -23,10 +23,11 @@ namespace VinSeek.Views
     /// </summary>
     public partial class MainWindow : Window
     {
+        private TabItem item;
         public MainWindow()
         {
             InitializeComponent();
-            var item = new TabItem();
+            item = new TabItem();
             // create new tab for the opened file
             item.Content = new VinSeekMainTab();
             item.Header = "New";
@@ -49,7 +50,7 @@ namespace VinSeek.Views
                     MainTabControl.Items.Add(item);
                     item.Focus();
                     // load data into hex box
-                    ((VinSeekMainTab)item.Content).LoadData(dialog.FileName);
+                    ((VinSeekMainTab)item.Content).LoadDataFromFile(dialog.FileName);
                 }
             }
         }
@@ -85,7 +86,17 @@ namespace VinSeek.Views
         }
         private void CaptureCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            Debug.WriteLine("Capture.");
+            if (StartCaptureMenuItem.IsEnabled == true)
+            {
+                ((VinSeekMainTab)item.Content).StartCapturePackets();
+                Debug.WriteLine("Start Capture.");
+            }
+            else
+            {
+                ((VinSeekMainTab)item.Content).StopCapturePackets();
+                Debug.WriteLine("Stop Capture.");
+            }
+                
         }
         private void OpenScriptCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
@@ -116,5 +127,11 @@ namespace VinSeek.Views
             Debug.WriteLine("Close Tab.");
         }
         #endregion
+
+        protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+        {
+            e.Cancel = true;
+            Environment.Exit(0);
+        }
     }
 }

@@ -60,7 +60,7 @@
                     <MenuItem Command="{x:Static utils:ShortcutCommands.ExitApplication}" />
                 </MenuItem>
                 <MenuItem Header="Capture">
-                    <MenuItem Header="Start" Command="{x:Static utils:ShortcutCommands.Capture}" InputGestureText="Ctrl+E" />
+                    <MenuItem x:Name="StartCaptureMenuItem" Header="Start" Command="{x:Static utils:ShortcutCommands.Capture}" InputGestureText="Ctrl+E" />
                     <MenuItem Header="Stop" Command="{x:Static utils:ShortcutCommands.Capture}" InputGestureText="Ctrl+E" />
                 </MenuItem>
                 <MenuItem Header="Scripts">

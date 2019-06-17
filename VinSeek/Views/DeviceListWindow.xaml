@@ -1,0 +1,14 @@
+﻿<Window x:Class="VinSeek.Views.DeviceListWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:VinSeek.Views"
+        mc:Ignorable="d"
+        Title="Select an adapter to capture" Height="450" Width="800" Loaded="DeviceListWindow_Loaded">
+    <Grid>
+        <ListBox x:Name="DeviceList" MouseDoubleClick="DeviceList_MouseDoubleClick" HorizontalAlignment="Left" Height="363" VerticalAlignment="Top" Width="782"/>
+        <Button x:Name="OKButton" Click="OKButton_Click" Content="OK" HorizontalAlignment="Left" Margin="657,381,0,0" VerticalAlignment="Top" Width="58" Height="28"/>
+        <Button x:Name="CancelButton" Click="CancelButton_Click" Content="Cancel" HorizontalAlignment="Left" Margin="720,381,0,0" VerticalAlignment="Top" Width="62" Height="28"/>
+    </Grid>
+</Window>
