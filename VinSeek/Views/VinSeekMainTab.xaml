@@ -55,27 +55,9 @@
                                                            Value="Sent"/>
                                             </MultiDataTrigger.Conditions>
                                             <Setter Property="Background"
-                                                Value="#FFFFC65F" />
-                                        </MultiDataTrigger>
-
-                                        <MultiDataTrigger>
-                                            <MultiDataTrigger.Conditions>
-                                                <Condition Binding="{Binding Direction}"
-                                                           Value="Sent"/>
-                                            </MultiDataTrigger.Conditions>
-                                            <Setter Property="Background"
                                                     Value="#FFFDDA99" />
                                         </MultiDataTrigger>
-
-                                        <MultiDataTrigger>
-                                            <MultiDataTrigger.Conditions>
-                                                <Condition Binding="{Binding Direction}"
-                                                           Value="Received"/>
-                                            </MultiDataTrigger.Conditions>
-                                            <Setter Property="Background"
-                                                    Value="#FF8CE2FF" />
-                                        </MultiDataTrigger>
-
+                                        
                                         <MultiDataTrigger>
                                             <MultiDataTrigger.Conditions>
                                                 <Condition Binding="{Binding Direction}"
@@ -84,7 +66,14 @@
                                             <Setter Property="Background"
                                                     Value="#FFB7E3FF" />
                                         </MultiDataTrigger>
-                                        
+
+                                        <MultiTrigger>
+                                            <MultiTrigger.Conditions>
+                                                <Condition Property="IsSelected" Value="true" />
+                                                <Condition Property="Selector.IsSelectionActive" Value="true" />
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="Background" Value="Pink" />
+                                        </MultiTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </ListView.Resources>
