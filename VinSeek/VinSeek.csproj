@@ -103,6 +103,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Model\CapturedPacketInfo.cs" />
+    <Compile Include="Utils\CustomPacketBuilder.cs" />
     <Compile Include="Utils\MachinaPacketCapture.cs" />
     <Compile Include="Utils\ShortcutCommands.cs" />
     <Compile Include="Views\DeviceListWindow.xaml.cs">

@@ -17,6 +17,7 @@ using PacketDotNet;
 using System.Threading;
 using System.Windows.Forms;
 using System.Diagnostics;
+using Microsoft.WindowsAPICodePack.Dialogs;
 using WpfHexaEditor;
 using System.IO;
 using SharpPcap.LibPcap;
@@ -40,6 +41,8 @@ namespace VinSeek.Views
         private MemoryStream _selectedDataStream;
         private MachinaPacketCapture _captureWorker;
         private Thread _captureThread;
+
+        public List<CapturedPacketInfo> CapturedPacketsList { get; set; }
 
         public VinSeekMainTab()
         {
@@ -79,6 +82,8 @@ namespace VinSeek.Views
             _captureWorker.Stop();
             _captureThread.Join();
             _captureWorker = null;
+
+            CapturedPacketsList = _capturedPacketsInfoList;
 
             Dispatcher.Invoke((Action)(() =>
             {
@@ -225,6 +230,53 @@ namespace VinSeek.Views
             LoadDataFromStream(selecteDataStream);
         }*/
         #endregion
+
+        private void ExportPacket_Click(object sender, RoutedEventArgs e)
+        {
+            var packets = PacketListView.SelectedItems;
+
+            if (packets.Count == 0)
+                return;
+
+            if (packets.Count == 1)
+            {
+                if (packets.Count == 1)
+                {
+                    var packet = (CapturedPacketInfo)PacketListView.Items[PacketListView.SelectedIndex];
+
+                    CommonSaveFileDialog exportDiag = new CommonSaveFileDialog();
+                    exportDiag.AlwaysAppendDefaultExtension = true;
+                    exportDiag.DefaultExtension = ".dat";
+                    exportDiag.DefaultFileName = "MyCapture";
+                    exportDiag.Filters.Add(new CommonFileDialogFilter("Data files", "*.dat"));
+
+                    if (exportDiag.ShowDialog() == CommonFileDialogResult.Ok)
+                    {
+                        File.WriteAllBytes(exportDiag.FileName, CustomPacketBuilder.BuildPacket(packet.Data));
+                        System.Windows.MessageBox.Show($"Packet successfully saved to {exportDiag.FileName}.", "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                    }
+                }
+                else
+                {
+                    using (CommonOpenFileDialog dialog = new CommonOpenFileDialog { IsFolderPicker = true })
+                    {
+                        dialog.Title = "Select a folder to save packets";
+
+                        if ((dialog.ShowDialog() == CommonFileDialogResult.Ok ? dialog.FileName : null) != null)
+                        {
+                            int count = 0;
+                            var currentDate = DateTime.Now.ToString("MM-dd-yy");
+                            foreach (CapturedPacketInfo packet in packets)
+                            {
+                                File.WriteAllBytes(System.IO.Path.Combine(dialog.FileName, currentDate + "-CaptureNo" + count.ToString() + ".dat"), CustomPacketBuilder.BuildPacket(packet.Data));
+                                count++;
+                            }
+                            System.Windows.MessageBox.Show($"Packets successfully saved to {dialog.FileName}.", "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

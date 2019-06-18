@@ -36,19 +36,13 @@
                         <ListView x:Name="PacketListView" Margin="0,20,0,0" Grid.ColumnSpan="2" SelectionChanged="PacketListView_SelectionChanged">
                             <ListView.ContextMenu>
                                 <ContextMenu>
-                                    <MenuItem Header="Edit Note"/>
-                                    <Separator/>
-                                    <MenuItem Header="Export to DAT"/>
-                                    <MenuItem Header="Export Set" />
-                                    <MenuItem Header="Build Set from selected Packets"/>
-                                    <MenuItem Header="Export selected sets for Replay" />
-                                    <Separator/>
-                                    <MenuItem Header="Apply specific struct to packet"/>
-                                    <MenuItem Header="Run specific scripts on packets"/>
+                                    <MenuItem Header="Export to DAT" Click="ExportPacket_Click"/>
                                 </ContextMenu>
                             </ListView.ContextMenu>
                             <ListView.Resources>
                                 <Style TargetType="{x:Type ListViewItem}">
+                                    <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                    
                                     <Style.Triggers>
                                         <MultiDataTrigger>
                                             <MultiDataTrigger.Conditions>
@@ -94,13 +88,12 @@
                             </ListView.Resources>
                             <ListView.View>
                                 <GridView>
-                                    <GridViewColumn Header="Source Addr" Width="250" DisplayMemberBinding="{Binding SourceIP}" />
-                                    <GridViewColumn Header="Dest Addr" Width="250" DisplayMemberBinding="{Binding DestIP}" />
+                                    <GridViewColumn Header="Source Address" Width="250" DisplayMemberBinding="{Binding SourceIP}" />
+                                    <GridViewColumn Header="Destination Address" Width="250" DisplayMemberBinding="{Binding DestIP}" />
                                     <GridViewColumn Header="Source Port" Width="180" DisplayMemberBinding="{Binding SourcePort}" />
-                                    <GridViewColumn Header="Dest Port" Width="180" DisplayMemberBinding="{Binding DestPort}" />
+                                    <GridViewColumn Header="Destination Port" Width="180" DisplayMemberBinding="{Binding DestPort}" />
                                     <GridViewColumn Header="Protocol" Width="100" DisplayMemberBinding="{Binding Protocol}" />
                                     <GridViewColumn Header="Length" Width="158" DisplayMemberBinding="{Binding Length}" />
-                                    <!--<GridViewColumn Header="Comments" Width="368" DisplayMemberBinding="{Binding Info}" />-->
                                 </GridView>
                                 <!--<GridView>
                                     <GridViewColumn Header="Opcode" Width="120" />

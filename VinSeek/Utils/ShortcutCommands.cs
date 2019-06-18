@@ -23,7 +23,7 @@ namespace VinSeek.Utils
         static RoutedUICommand editTemplate = new RoutedUICommand("Edit Template", "EditTemplate", typeof(ShortcutCommands));
         static RoutedUICommand runTemplate = new RoutedUICommand("Run Template", "RunTemplate", typeof(ShortcutCommands));
         static RoutedUICommand exitApplication = new RoutedUICommand("Exit", "ExitApplication", typeof(ShortcutCommands));
-        static RoutedUICommand exportPackets = new RoutedUICommand("Export Packets", "ExportPackets", typeof(ShortcutCommands));
+        static RoutedUICommand exportPackets = new RoutedUICommand("Export All Packets", "ExportPackets", typeof(ShortcutCommands));
 
         public static RoutedUICommand NewTab { get { return newTab; } }
         public static RoutedUICommand OpenFile { get { return openFile; } }

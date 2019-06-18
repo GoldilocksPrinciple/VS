@@ -15,6 +15,8 @@ using System.Windows.Shapes;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using System.Diagnostics;
 using System.IO;
+using VinSeek.Model;
+using VinSeek.Utils;
 
 namespace VinSeek.Views
 {
@@ -28,10 +30,14 @@ namespace VinSeek.Views
         {
             InitializeComponent();
             item = new TabItem();
-            // create new tab for the opened file
-            item.Content = new VinSeekMainTab();
-            item.Header = "New";
-            MainTabControl.Items.Add(item);
+            // create default new tab
+            Dispatcher.Invoke((Action)(() =>
+            {
+                item.Content = new VinSeekMainTab();
+                item.Header = "New";
+                MainTabControl.Items.Add(item);
+            }));
+            
         }
 
         public void OpenFile()
@@ -45,12 +51,64 @@ namespace VinSeek.Views
                 {
                     var item = new TabItem();
                     // create new tab for the opened file
-                    item.Content = new VinSeekMainTab();
-                    item.Header = System.IO.Path.GetFileName(dialog.FileName);
-                    MainTabControl.Items.Add(item);
-                    item.Focus();
-                    // load data into hex box
-                    ((VinSeekMainTab)item.Content).LoadDataFromFile(dialog.FileName);
+                    Dispatcher.Invoke((Action)(() =>
+                    {
+                        item.Content = new VinSeekMainTab();
+                        item.Header = System.IO.Path.GetFileName(dialog.FileName);
+                        MainTabControl.Items.Add(item);
+                        item.Focus();
+                        // load data into hex box
+                        ((VinSeekMainTab)item.Content).LoadDataFromFile(dialog.FileName);
+                    }));
+                }
+            }
+        }
+
+        public void ExportPacketsToFile()
+        {
+            if (!StartCaptureMenuItem.IsEnabled)
+                return;
+
+            var packets = ((VinSeekMainTab)item.Content).CapturedPacketsList;
+
+            if (packets.Count == 0)
+                return;
+
+            Debug.WriteLine("Packet count = " + packets.Count.ToString());
+
+            if (packets.Count == 1)
+            {
+                var packet = ((VinSeekMainTab)item.Content).CapturedPacketsList[0];
+
+                CommonSaveFileDialog exportDiag = new CommonSaveFileDialog();
+                exportDiag.AlwaysAppendDefaultExtension = true;
+                exportDiag.DefaultExtension = ".dat";
+                exportDiag.DefaultFileName = "MyCapture";
+                exportDiag.Filters.Add(new CommonFileDialogFilter("Data files", "*.dat"));
+
+                if (exportDiag.ShowDialog() == CommonFileDialogResult.Ok)
+                {
+                    File.WriteAllBytes(exportDiag.FileName, CustomPacketBuilder.BuildPacket(packet.Data));
+                    MessageBox.Show($"Packet successfully saved to {exportDiag.FileName}.", "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                }
+            }
+            else
+            {
+                using (CommonOpenFileDialog dialog = new CommonOpenFileDialog { IsFolderPicker = true })
+                {
+                    dialog.Title = "Select a folder to save packets";
+
+                    if ((dialog.ShowDialog() == CommonFileDialogResult.Ok ? dialog.FileName : null) != null)
+                    {
+                        int count = 0;
+                        var currentDate = DateTime.Now.ToString("MM-dd-yy");
+                        foreach (CapturedPacketInfo packet in packets)
+                        {
+                            File.WriteAllBytes(System.IO.Path.Combine(dialog.FileName, currentDate + "-CaptureNo" + count.ToString() + ".dat"), CustomPacketBuilder.BuildPacket(packet.Data));
+                            count++;
+                        }
+                        MessageBox.Show($"Packets successfully saved to {dialog.FileName}.", "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                    }
                 }
             }
         }
@@ -62,6 +120,7 @@ namespace VinSeek.Views
         }
         private void OpenFileCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
+            Debug.WriteLine("Open File.");
             OpenFile();
         }
         private void SaveFileCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -75,6 +134,7 @@ namespace VinSeek.Views
         private void ExportPacketsCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Debug.WriteLine("Export Packets.");
+            ExportPacketsToFile();
         }
         private void CloseTabCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
@@ -87,18 +147,19 @@ namespace VinSeek.Views
         private void ExitApplicationCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Debug.WriteLine("Exit Application.");
+            Environment.Exit(0);
         }
         private void CaptureCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            if (StartCaptureMenuItem.IsEnabled == true)
+            if (StartCaptureMenuItem.IsEnabled)
             {
-                ((VinSeekMainTab)item.Content).StartCapturePackets();
                 Debug.WriteLine("Start Capture.");
+                ((VinSeekMainTab)item.Content).StartCapturePackets();
             }
             else
             {
-                ((VinSeekMainTab)item.Content).StopCapturePackets();
                 Debug.WriteLine("Stop Capture.");
+                ((VinSeekMainTab)item.Content).StopCapturePackets();
             }
                 
         }
