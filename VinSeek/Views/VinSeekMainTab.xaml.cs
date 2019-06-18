@@ -19,6 +19,9 @@ using System.Windows.Forms;
 using System.Diagnostics;
 using WpfHexaEditor;
 using System.IO;
+using SharpPcap.LibPcap;
+using VinSeek.Model;
+using VinSeek.Utils;
 
 namespace VinSeek.Views
 {
@@ -27,11 +30,16 @@ namespace VinSeek.Views
     /// </summary>
     public partial class VinSeekMainTab : System.Windows.Controls.UserControl
     {
-        private DeviceListWindow _deviceListWindow;
-        private ICaptureDevice _device;
-        private List<CapturedPackets> _capturedPacketsList;
+        //private DeviceListWindow _deviceListWindow;
+        //private ICaptureDevice _device;
+        //private List<CapturedPacketsInfo> _capturedPacketsInfoList;
         private MainWindow _mainWindow = System.Windows.Application.Current.MainWindow as MainWindow;
-        private bool _backgroundThreadStop = false;
+        //private bool _backgroundThreadStop = false;
+        private List<CapturedPacketInfo> _capturedPacketsInfoList;
+        //private static CaptureFileWriterDevice _captureFileWriter;
+        private MemoryStream _selectedDataStream;
+        private MachinaPacketCapture _captureWorker;
+        private Thread _captureThread;
 
         public VinSeekMainTab()
         {
@@ -50,6 +58,65 @@ namespace VinSeek.Views
 
         public void StartCapturePackets()
         {
+            if (_captureWorker != null)
+                return;
+
+            _capturedPacketsInfoList = new List<CapturedPacketInfo>();
+            _captureWorker = new MachinaPacketCapture(this);
+            _captureThread = new Thread(_captureWorker.Start);
+            _captureThread.Start();
+
+            Dispatcher.Invoke((Action)(() =>
+            {
+                _mainWindow.StartCaptureMenuItem.IsEnabled = false;
+            }));
+        }
+        public void StopCapturePackets()
+        {
+            if (_captureWorker == null)
+                return;
+
+            _captureWorker.Stop();
+            _captureThread.Join();
+            _captureWorker = null;
+
+            Dispatcher.Invoke((Action)(() =>
+            {
+                _mainWindow.StartCaptureMenuItem.IsEnabled = true;
+            }));
+        }
+
+        public void AddPacketToList(CapturedPacketInfo packetInfo)
+        {
+            Dispatcher.Invoke((Action)(() =>
+            {
+                _capturedPacketsInfoList.Add(packetInfo);
+                PacketListView.ItemsSource = _capturedPacketsInfoList;
+                PacketListView.Items.Refresh();
+            }));
+        }
+
+        private void PacketListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (PacketListView.SelectedIndex == -1)
+                return;
+
+            if (_capturedPacketsInfoList.Count == 0)
+                return;
+
+            var data = _capturedPacketsInfoList[PacketListView.SelectedIndex].Data;
+
+            _selectedDataStream = new MemoryStream(data);
+
+            Dispatcher.Invoke((Action)(() =>
+            {
+                LoadDataFromStream(_selectedDataStream);
+            }));
+
+        }
+        #region SharpPcap
+        /*public void StartCapturePackets()
+        {
             _deviceListWindow = new DeviceListWindow();
             _deviceListWindow.Show();
             _deviceListWindow.OnItemSelected += DeviceListWindow_OnItemSelected;
@@ -67,7 +134,7 @@ namespace VinSeek.Views
             /*new Thread(delegate ()
             {
                 StartCapture(itemIndex);
-            }).Start();*/
+            }).Start();
             await Task.Run(() => StartCapture(itemIndex));
         }
 
@@ -79,7 +146,8 @@ namespace VinSeek.Views
                 PacketListView.ItemsSource = null;
             }));
 
-            _capturedPacketsList = new List<CapturedPackets>();
+            _capturedPacketsInfoList = new List<CapturedPacketsInfo>();
+            _capturedPackets = new List<Packet>();
             _device = CaptureDeviceList.Instance[itemIndex];
 
             // Open the device for capturing
@@ -97,11 +165,9 @@ namespace VinSeek.Views
                     _device.Close();
                     break;
                 }
-                Dispatcher.Invoke((Action)(() =>
-                {
-                    PacketListView.Items.Refresh();
-                }));
+
                 var pack = PacketDotNet.Packet.ParsePacket(rawCapture.LinkLayerType, rawCapture.Data);
+                _capturedPackets.Add(pack);
                 var tcp = (TcpPacket)pack.Extract(typeof(TcpPacket));
                 if (tcp != null)
                 {
@@ -117,8 +183,8 @@ namespace VinSeek.Views
                     // update PacketListView
                     Dispatcher.Invoke((Action)(() =>
                     {
-                        _capturedPacketsList.Add(new CapturedPackets() { SourceIP = sourceIP, DestIP = destIP, Protocol = protocol, Length = len, Data = data });
-                        PacketListView.ItemsSource = _capturedPacketsList;
+                        _capturedPacketsInfoList.Add(new CapturedPacketsInfo() { SourceIP = sourceIP, DestIP = destIP, Protocol = protocol, Length = len, Data = data });
+                        PacketListView.ItemsSource = _capturedPacketsInfoList;
                         PacketListView.Items.Refresh();
                     }));
                 }
@@ -133,8 +199,8 @@ namespace VinSeek.Views
             }));
             _backgroundThreadStop = true;
         }
-
-        public class CapturedPackets
+        
+        public class CapturedPacketsInfo
         {
             public string SourceIP { get; set; }
             public string DestIP { get; set; }
@@ -149,15 +215,16 @@ namespace VinSeek.Views
             if (PacketListView.SelectedIndex == -1)
                 return;
 
-            if (_capturedPacketsList.Count == 0)
+            if (_capturedPacketsInfoList.Count == 0)
                 return;
 
-            var data = _capturedPacketsList[PacketListView.SelectedIndex].Data;
+            var data = _capturedPacketsInfoList[PacketListView.SelectedIndex].Data;
 
             MemoryStream selecteDataStream = new MemoryStream(data);
 
             LoadDataFromStream(selecteDataStream);
-        }
+        }*/
+        #endregion
     }
 }
 

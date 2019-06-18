@@ -11,3 +11,10 @@ NuGet Package: Install-Package WPFHexaEditor
 - Sharppcap: https://github.com/chmorgan/sharppcap
 ```xaml
 NuGet Package: Install-Package SharpPcap
+```
+- Custom version of Machina in \libs\
+Original: https://github.com/ravahn/machina
+
+**Others:**
+- WinPcap for capturing function: https://www.winpcap.org/install/
+- Make sure to add the tool to Firewall exclusion, and always run it as administrator.

@@ -72,6 +72,10 @@ namespace VinSeek.Views
         {
             Debug.WriteLine("Save File As.");
         }
+        private void ExportPacketsCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            Debug.WriteLine("Export Packets.");
+        }
         private void CloseTabCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Debug.WriteLine("Close Tab.");

@@ -7,7 +7,7 @@
              xmlns:control="clr-namespace:WpfHexaEditor;assembly=WPFHexaEditor"
              xmlns:local="clr-namespace:VinSeek.Views"
              mc:Ignorable="d" 
-             d:DesignHeight="800" d:DesignWidth="900">
+             d:DesignHeight="800" d:DesignWidth="1600">
     <Grid>
         <DockPanel VerticalAlignment="Stretch">
             <DockPanel>
@@ -47,15 +47,13 @@
                                     <MenuItem Header="Run specific scripts on packets"/>
                                 </ContextMenu>
                             </ListView.ContextMenu>
-                            <!--<ListView.Resources>
+                            <ListView.Resources>
                                 <Style TargetType="{x:Type ListViewItem}">
                                     <Style.Triggers>
                                         <MultiDataTrigger>
                                             <MultiDataTrigger.Conditions>
                                                 <Condition Binding="{Binding Direction}"
-                                                           Value="S"/>
-                                                <Condition Binding="{Binding Set}"
-                                                           Value="0"/>
+                                                           Value="Sent"/>
                                             </MultiDataTrigger.Conditions>
                                             <Setter Property="Background"
                                                 Value="#FFFFC65F" />
@@ -64,9 +62,7 @@
                                         <MultiDataTrigger>
                                             <MultiDataTrigger.Conditions>
                                                 <Condition Binding="{Binding Direction}"
-                                                           Value="S"/>
-                                                <Condition Binding="{Binding Set}"
-                                                           Value="1"/>
+                                                           Value="Sent"/>
                                             </MultiDataTrigger.Conditions>
                                             <Setter Property="Background"
                                                     Value="#FFFDDA99" />
@@ -75,9 +71,7 @@
                                         <MultiDataTrigger>
                                             <MultiDataTrigger.Conditions>
                                                 <Condition Binding="{Binding Direction}"
-                                                           Value="C"/>
-                                                <Condition Binding="{Binding Set}"
-                                                           Value="0"/>
+                                                           Value="Received"/>
                                             </MultiDataTrigger.Conditions>
                                             <Setter Property="Background"
                                                     Value="#FF8CE2FF" />
@@ -86,9 +80,7 @@
                                         <MultiDataTrigger>
                                             <MultiDataTrigger.Conditions>
                                                 <Condition Binding="{Binding Direction}"
-                                                           Value="C"/>
-                                                <Condition Binding="{Binding Set}"
-                                                           Value="1"/>
+                                                           Value="Received"/>
                                             </MultiDataTrigger.Conditions>
                                             <Setter Property="Background"
                                                     Value="#FFB7E3FF" />
@@ -99,13 +91,15 @@
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
-                            </ListView.Resources>-->
+                            </ListView.Resources>
                             <ListView.View>
                                 <GridView>
-                                    <GridViewColumn Header="Source" Width="120" DisplayMemberBinding="{Binding SourceIP}" />
-                                    <GridViewColumn Header="Destination" Width="300" DisplayMemberBinding="{Binding DestIP}" />
-                                    <GridViewColumn Header="Protocol" Width="50" DisplayMemberBinding="{Binding Protocol}" />
-                                    <GridViewColumn Header="Length" Width="380" DisplayMemberBinding="{Binding Length}" />
+                                    <GridViewColumn Header="Source Addr" Width="250" DisplayMemberBinding="{Binding SourceIP}" />
+                                    <GridViewColumn Header="Dest Addr" Width="250" DisplayMemberBinding="{Binding DestIP}" />
+                                    <GridViewColumn Header="Source Port" Width="180" DisplayMemberBinding="{Binding SourcePort}" />
+                                    <GridViewColumn Header="Dest Port" Width="180" DisplayMemberBinding="{Binding DestPort}" />
+                                    <GridViewColumn Header="Protocol" Width="100" DisplayMemberBinding="{Binding Protocol}" />
+                                    <GridViewColumn Header="Length" Width="158" DisplayMemberBinding="{Binding Length}" />
                                     <!--<GridViewColumn Header="Comments" Width="368" DisplayMemberBinding="{Binding Info}" />-->
                                 </GridView>
                                 <!--<GridView>

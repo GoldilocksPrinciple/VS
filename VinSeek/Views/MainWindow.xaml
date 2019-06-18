@@ -18,6 +18,7 @@
         <CommandBinding Command="{x:Static utils:ShortcutCommands.OpenFile}" Executed="OpenFileCommandBinding_Executed" />
         <CommandBinding Command="{x:Static utils:ShortcutCommands.SaveFile}" Executed="SaveFileCommandBinding_Executed" />
         <CommandBinding Command="{x:Static utils:ShortcutCommands.SaveFileAs}" Executed="SaveFileAsCommandBinding_Executed" />
+        <CommandBinding Command="{x:Static utils:ShortcutCommands.ExportPackets}" Executed="ExportPacketsCommandBinding_Executed" />
         <CommandBinding Command="{x:Static utils:ShortcutCommands.CloseTab}" Executed="CloseTabCommandBinding_Executed" />
         <CommandBinding Command="{x:Static utils:ShortcutCommands.CloseAllTab}" Executed="CloseAllTabCommandBinding_Executed" />
         <CommandBinding Command="{x:Static utils:ShortcutCommands.ExitApplication}" Executed="ExitApplicationCommandBinding_Executed" />
@@ -53,6 +54,8 @@
                     <Separator/>
                     <MenuItem Command="{x:Static utils:ShortcutCommands.SaveFile}" InputGestureText="Ctrl+S" />
                     <MenuItem Command="{x:Static utils:ShortcutCommands.SaveFileAs}" InputGestureText="Ctrl+Shift+S" />
+                    <Separator/>
+                    <MenuItem Command="{x:Static utils:ShortcutCommands.ExportPackets}" />
                     <Separator/>
                     <MenuItem Command="{x:Static utils:ShortcutCommands.CloseTab}" InputGestureText="Ctrl+W" />
                     <MenuItem Command="{x:Static utils:ShortcutCommands.CloseAllTab}" InputGestureText="Ctrl+Alt+W" />

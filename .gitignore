@@ -23,7 +23,6 @@ bld/
 [Ll]og/
 bin
 obj
-libs
 packages
 
 # Visual Studio 2015 cache/options directory
