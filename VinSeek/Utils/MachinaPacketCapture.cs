@@ -17,8 +17,10 @@ namespace VinSeek.Utils
     {
         private readonly VinSeekMainTab _currentVinSeekTab;
         private bool _stopCapturing;
-        //private int packetSent = 0;
-        //private int packetReceived = 0;
+        private int _packetSent = 0;
+        private int _packetReceived = 0;
+        private uint _processId;
+        public bool foundProcessId = false;
 
         public MachinaPacketCapture(VinSeekMainTab currentTab)
         {
@@ -27,39 +29,58 @@ namespace VinSeek.Utils
 
         public void Start()
         {
-            uint processId;
-
-            while (true)
-            {
-                Process[] vindictusProcess = Process.GetProcessesByName("Vindictus");
-
-                if (vindictusProcess.Length > 0)
-                {
-                    processId = (uint)vindictusProcess[0].Id;
-                    Debug.WriteLine("Found a Vindictus process. ID: " + processId.ToString());
-                    break;
-                }
-            }
-
-            Debug.WriteLine("Starting capture monitor");
-            TCPNetworkMonitor monitor = new TCPNetworkMonitor();
-            monitor.ProcessID = processId;
-            monitor.MonitorType = TCPNetworkMonitor.NetworkMonitorType.WinPCap;
-            monitor.DataReceived += (string connection, TCPConnection tcpConnection, byte[] data, int packetLength) => DataReceived(connection, tcpConnection, data, packetLength);
-            monitor.DataSent += (string connection, TCPConnection tcpConnection, byte[] data, int packetLength) => DataSent(connection, tcpConnection, data, packetLength);
-            monitor.Start();
-
+            _processId = 0;
+            
             while (!_stopCapturing)
             {
-                Thread.Sleep(1);
-            }
+                Debug.WriteLine("Still running");
 
-            monitor.Stop();
+                Process[] vindictusProcess = Process.GetProcessesByName("Vindictus");
+
+                if (vindictusProcess.Length > 0) // can't be more than 1 instance... 
+                {
+                    _processId = (uint)vindictusProcess[0].Id;
+                    string info = "Listening for connection of Process [" + _processId.ToString() + "]";
+                    _currentVinSeekTab.UpdateCaptureProcessInfo(info);
+                    foundProcessId = true;
+                    break;
+                }
+                else
+                {
+                    string info = "No Vindictus process found";
+                    _currentVinSeekTab.UpdateCaptureProcessInfo(info);
+                }
+            }
+            
+            if (foundProcessId)
+            {
+                Debug.WriteLine("Starting capture monitor");
+                TCPNetworkMonitor monitor = new TCPNetworkMonitor();
+                monitor.ProcessID = _processId;
+                monitor.MonitorType = TCPNetworkMonitor.NetworkMonitorType.WinPCap;
+                monitor.DataReceived += (string connection, TCPConnection tcpConnection, byte[] data, int packetLength) => DataReceived(connection, tcpConnection, data, packetLength);
+                monitor.DataSent += (string connection, TCPConnection tcpConnection, byte[] data, int packetLength) => DataSent(connection, tcpConnection, data, packetLength);
+                monitor.Start();
+
+                _currentVinSeekTab.UpdateNumberOfPackets("Init", 0);
+
+                while (!_stopCapturing)
+                {
+                    Thread.Sleep(1);
+                }
+
+                monitor.Stop();
+            }
         }
 
         public void Stop()
         {
             _stopCapturing = true;
+            if (foundProcessId)
+            {
+                string info = "Listener stopped for Process [" + _processId.ToString() + "]";
+                _currentVinSeekTab.UpdateCaptureProcessInfo(info);
+            }
         }
 
         private void DataReceived(string connection, TCPConnection tcpConnection, byte[] data, int packetLength)
@@ -76,8 +97,9 @@ namespace VinSeek.Utils
                 Length = packetLength,
                 Data = data,
             };
+            _packetReceived++;
             _currentVinSeekTab.AddPacketToList(item);
-            //packetReceived++;
+            _currentVinSeekTab.UpdateNumberOfPackets("Received", _packetReceived);
         }
 
         private void DataSent(string connection, TCPConnection tcpConnection, byte[] data, int packetLength)
@@ -94,8 +116,10 @@ namespace VinSeek.Utils
                 Length = packetLength,
                 Data = data,
             };
+            _packetSent++;
             _currentVinSeekTab.AddPacketToList(item);
-            //packetSent++;
+            _currentVinSeekTab.UpdateNumberOfPackets("Sent", _packetSent);
+
         }
 
     }
