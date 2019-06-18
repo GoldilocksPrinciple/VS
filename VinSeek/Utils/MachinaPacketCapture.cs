@@ -27,8 +27,23 @@ namespace VinSeek.Utils
 
         public void Start()
         {
+            uint processId;
+
+            while (true)
+            {
+                Process[] vindictusProcess = Process.GetProcessesByName("Vindictus");
+
+                if (vindictusProcess.Length > 0)
+                {
+                    processId = (uint)vindictusProcess[0].Id;
+                    Debug.WriteLine("Found a Vindictus process. ID: " + processId.ToString());
+                    break;
+                }
+            }
+
+            Debug.WriteLine("Starting capture monitor");
             TCPNetworkMonitor monitor = new TCPNetworkMonitor();
-            monitor.WindowName = "Vindictus";
+            monitor.ProcessID = processId;
             monitor.MonitorType = TCPNetworkMonitor.NetworkMonitorType.WinPCap;
             monitor.DataReceived += (string connection, TCPConnection tcpConnection, byte[] data, int packetLength) => DataReceived(connection, tcpConnection, data, packetLength);
             monitor.DataSent += (string connection, TCPConnection tcpConnection, byte[] data, int packetLength) => DataSent(connection, tcpConnection, data, packetLength);
@@ -50,44 +65,38 @@ namespace VinSeek.Utils
         private void DataReceived(string connection, TCPConnection tcpConnection, byte[] data, int packetLength)
         {
             Debug.WriteLine("Received TCP Packets.");
-            if (tcpConnection.RemotePort.ToString() == "27015") // display filter
+            var item = new CapturedPacketInfo
             {
-                var item = new CapturedPacketInfo
-                {
-                    Direction = "Received",
-                    SourceIP = new IPAddress(tcpConnection.RemoteIP).ToString(),
-                    DestIP = new IPAddress(tcpConnection.LocalIP).ToString(),
-                    SourcePort = tcpConnection.RemotePort.ToString(),
-                    DestPort = tcpConnection.LocalPort.ToString(),
-                    Protocol = IPProtocol.TCP,
-                    Length = packetLength,
-                    Data = data,
-                };
-                _currentVinSeekTab.AddPacketToList(item);
-            }
+                Direction = "Received",
+                SourceIP = new IPAddress(tcpConnection.RemoteIP).ToString(),
+                DestIP = new IPAddress(tcpConnection.LocalIP).ToString(),
+                SourcePort = tcpConnection.RemotePort.ToString(),
+                DestPort = tcpConnection.LocalPort.ToString(),
+                Protocol = IPProtocol.TCP,
+                Length = packetLength,
+                Data = data,
+            };
+            _currentVinSeekTab.AddPacketToList(item);
             //packetReceived++;
         }
 
         private void DataSent(string connection, TCPConnection tcpConnection, byte[] data, int packetLength)
         {
             Debug.WriteLine("Sending TCP Packets.");
-            if (tcpConnection.RemotePort.ToString() == "27015") // display filter
+            var item = new CapturedPacketInfo
             {
-                var item = new CapturedPacketInfo
-                {
-                    Direction = "Sent",
-                    SourceIP = new IPAddress(tcpConnection.LocalIP).ToString(),
-                    DestIP = new IPAddress(tcpConnection.RemoteIP).ToString(),
-                    SourcePort = tcpConnection.LocalPort.ToString(),
-                    DestPort = tcpConnection.RemotePort.ToString(),
-                    Protocol = IPProtocol.TCP,
-                    Length = packetLength,
-                    Data = data,
-                };
-                _currentVinSeekTab.AddPacketToList(item);
-            }
+                Direction = "Sent",
+                SourceIP = new IPAddress(tcpConnection.LocalIP).ToString(),
+                DestIP = new IPAddress(tcpConnection.RemoteIP).ToString(),
+                SourcePort = tcpConnection.LocalPort.ToString(),
+                DestPort = tcpConnection.RemotePort.ToString(),
+                Protocol = IPProtocol.TCP,
+                Length = packetLength,
+                Data = data,
+            };
+            _currentVinSeekTab.AddPacketToList(item);
             //packetSent++;
         }
-        
+
     }
 }
