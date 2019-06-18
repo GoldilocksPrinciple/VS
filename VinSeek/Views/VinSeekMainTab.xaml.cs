@@ -41,6 +41,7 @@ namespace VinSeek.Views
         private MemoryStream _selectedDataStream;
         private MachinaPacketCapture _captureWorker;
         private Thread _captureThread;
+        public bool captureStarted = false;
 
         public List<CapturedPacketInfo> CapturedPacketsList { get; set; }
 
@@ -63,7 +64,7 @@ namespace VinSeek.Views
         {
             if (_captureWorker != null)
                 return;
-
+            captureStarted = true;
             _capturedPacketsInfoList = new List<CapturedPacketInfo>();
             _captureWorker = new MachinaPacketCapture(this);
             _captureThread = new Thread(_captureWorker.Start);
@@ -74,30 +75,41 @@ namespace VinSeek.Views
                 _mainWindow.StartCaptureMenuItem.IsEnabled = false;
             }));
         }
+
         public void StopCapturePackets()
         {
             if (_captureWorker == null)
                 return;
+            if (!_captureWorker.foundProcessId)
+            {
+                _captureWorker.Stop();
+                
+            }
+            else
+            {
+                _captureWorker.Stop();
+                _captureThread.Join();
+            }
 
-            _captureWorker.Stop();
-            _captureThread.Join();
             _captureWorker = null;
-
             CapturedPacketsList = _capturedPacketsInfoList;
 
             Dispatcher.Invoke((Action)(() =>
             {
                 _mainWindow.StartCaptureMenuItem.IsEnabled = true;
             }));
+
         }
 
         public void AddPacketToList(CapturedPacketInfo packetInfo)
         {
+            _capturedPacketsInfoList.Add(packetInfo);
+            Debug.WriteLine(_capturedPacketsInfoList.Count);
             Dispatcher.Invoke((Action)(() =>
             {
-                _capturedPacketsInfoList.Add(packetInfo);
-                PacketListView.ItemsSource = _capturedPacketsInfoList;
+                PacketListView.Items.Add(packetInfo);
                 PacketListView.Items.Refresh();
+                //PacketListView.ScrollIntoView(packetInfo);
             }));
         }
 
@@ -119,6 +131,7 @@ namespace VinSeek.Views
             }));
 
         }
+
         #region SharpPcap
         /*public void StartCapturePackets()
         {
@@ -231,6 +244,7 @@ namespace VinSeek.Views
         }*/
         #endregion
 
+        #region Export Packets
         private void ExportPacket_Click(object sender, RoutedEventArgs e)
         {
             var packets = PacketListView.SelectedItems;
@@ -277,6 +291,44 @@ namespace VinSeek.Views
                 }
             }
         }
+        #endregion
+
+        public void UpdateNumberOfPackets(string direction, int count)
+        {
+            if (direction == "Init")
+            {
+                Dispatcher.Invoke((Action)(() =>
+                {
+                    PacketSentText.Text = "Sent: " + count.ToString();
+                    PacketReceivedText.Text = "Received: " + count.ToString();
+                }));
+            }
+            else if (direction == "Sent")
+            {
+                Dispatcher.Invoke((Action)(() =>
+                {
+                    PacketSentText.Text = "Sent: " + count.ToString();
+                }));
+            }
+            else if (direction == "Received")
+            {
+                Dispatcher.Invoke((Action)(() =>
+                {
+                    PacketReceivedText.Text = "Received: " + count.ToString();
+                }));
+            }
+            else
+                return;
+        }
+
+        public void UpdateCaptureProcessInfo(string text)
+        {
+            Dispatcher.Invoke((Action)(() =>
+            {
+                ProcessInfoText.Text = text;
+            }));
+        }
+        
     }
 }
 
