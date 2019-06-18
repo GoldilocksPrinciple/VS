@@ -19,4 +19,5 @@ namespace VinSeek.Model
         public IPProtocol Protocol { get; set; }
         public int Length { get; set; }
         public byte[] Data { get; set; }
+    }
 }
