@@ -85,7 +85,6 @@ namespace VinSeek.Utils
 
         private void DataReceived(string connection, TCPConnection tcpConnection, byte[] data, int packetLength)
         {
-            Debug.WriteLine("Received TCP Packets.");
             var item = new CapturedPacketInfo
             {
                 Direction = "Received",
@@ -104,7 +103,6 @@ namespace VinSeek.Utils
 
         private void DataSent(string connection, TCPConnection tcpConnection, byte[] data, int packetLength)
         {
-            Debug.WriteLine("Sending TCP Packets.");
             var item = new CapturedPacketInfo
             {
                 Direction = "Sent",
@@ -119,7 +117,6 @@ namespace VinSeek.Utils
             _packetSent++;
             _currentVinSeekTab.AddPacketToList(item);
             _currentVinSeekTab.UpdateNumberOfPackets("Sent", _packetSent);
-
         }
 
     }

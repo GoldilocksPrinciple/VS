@@ -64,7 +64,15 @@ namespace VinSeek.Views
         {
             if (_captureWorker != null)
                 return;
+
             captureStarted = true;
+
+            Dispatcher.Invoke((Action)(() =>
+            {
+                PacketListView.Items.Clear();
+                PacketListView.Items.Refresh();
+            }));
+
             _capturedPacketsInfoList = new List<CapturedPacketInfo>();
             _captureWorker = new MachinaPacketCapture(this);
             _captureThread = new Thread(_captureWorker.Start);
@@ -104,11 +112,10 @@ namespace VinSeek.Views
         public void AddPacketToList(CapturedPacketInfo packetInfo)
         {
             _capturedPacketsInfoList.Add(packetInfo);
-            Debug.WriteLine(_capturedPacketsInfoList.Count);
+
             Dispatcher.Invoke((Action)(() =>
             {
                 PacketListView.Items.Add(packetInfo);
-                PacketListView.Items.Refresh();
                 //PacketListView.ScrollIntoView(packetInfo);
             }));
         }
