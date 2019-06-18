@@ -149,19 +149,19 @@ namespace VinSeek.Views
             Debug.WriteLine("Exit Application.");
             Environment.Exit(0);
         }
-        private void CaptureCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
+        private void StartCaptureCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            Debug.WriteLine("Start Capture.");
+            ((VinSeekMainTab)item.Content).StartCapturePackets();
+        }
+        private void StopCaptureCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             if (StartCaptureMenuItem.IsEnabled)
-            {
-                Debug.WriteLine("Start Capture.");
-                ((VinSeekMainTab)item.Content).StartCapturePackets();
-            }
-            else
-            {
-                Debug.WriteLine("Stop Capture.");
-                ((VinSeekMainTab)item.Content).StopCapturePackets();
-            }
-                
+                return;
+
+            Debug.WriteLine("Stop Capture.");
+            ((VinSeekMainTab)item.Content).StopCapturePackets();
+
         }
         private void OpenScriptCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {

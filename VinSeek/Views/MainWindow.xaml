@@ -22,7 +22,8 @@
         <CommandBinding Command="{x:Static utils:ShortcutCommands.CloseTab}" Executed="CloseTabCommandBinding_Executed" />
         <CommandBinding Command="{x:Static utils:ShortcutCommands.CloseAllTab}" Executed="CloseAllTabCommandBinding_Executed" />
         <CommandBinding Command="{x:Static utils:ShortcutCommands.ExitApplication}" Executed="ExitApplicationCommandBinding_Executed" />
-        <CommandBinding Command="{x:Static utils:ShortcutCommands.Capture}" Executed="CaptureCommandBinding_Executed" />
+        <CommandBinding Command="{x:Static utils:ShortcutCommands.StartCapture}" Executed="StartCaptureCommandBinding_Executed" />
+        <CommandBinding Command="{x:Static utils:ShortcutCommands.StopCapture}" Executed="StopCaptureCommandBinding_Executed" />
         <CommandBinding Command="{x:Static utils:ShortcutCommands.OpenScript}" Executed="OpenScriptCommandBinding_Executed" />
         <CommandBinding Command="{x:Static utils:ShortcutCommands.EditScript}" Executed="EditScriptCommandBinding_Executed" />
         <CommandBinding Command="{x:Static utils:ShortcutCommands.RunScript}" Executed="RunScriptCommandBinding_Executed" />
@@ -37,7 +38,8 @@
         <KeyBinding Gesture="Ctrl+Shift+S" Command="{x:Static utils:ShortcutCommands.SaveFileAs}" />
         <KeyBinding Gesture="Ctrl+W" Command="{x:Static utils:ShortcutCommands.CloseTab}" />
         <KeyBinding Gesture="Ctrl+Shift+W" Command="{x:Static utils:ShortcutCommands.CloseAllTab}" />
-        <KeyBinding Gesture="Ctrl+E" Command="{x:Static utils:ShortcutCommands.Capture}" />
+        <KeyBinding Gesture="Ctrl+E" Command="{x:Static utils:ShortcutCommands.StartCapture}" />
+        <KeyBinding Gesture="Ctrl+Shift+E" Command="{x:Static utils:ShortcutCommands.StopCapture}" />
         <KeyBinding Gesture="Ctrl+F7" Command="{x:Static utils:ShortcutCommands.OpenScript}" />
         <KeyBinding Gesture="Ctrl+Shift+F7" Command="{x:Static utils:ShortcutCommands.EditScript}" />
         <KeyBinding Key="F7" Command="{x:Static utils:ShortcutCommands.RunScript}" />
@@ -63,8 +65,8 @@
                     <MenuItem Command="{x:Static utils:ShortcutCommands.ExitApplication}" />
                 </MenuItem>
                 <MenuItem Header="Capture">
-                    <MenuItem x:Name="StartCaptureMenuItem" Header="Start" Command="{x:Static utils:ShortcutCommands.Capture}" InputGestureText="Ctrl+E" />
-                    <MenuItem Header="Stop" Command="{x:Static utils:ShortcutCommands.Capture}" InputGestureText="Ctrl+E" />
+                    <MenuItem x:Name="StartCaptureMenuItem" Command="{x:Static utils:ShortcutCommands.StartCapture}" InputGestureText="Ctrl+E" />
+                    <MenuItem Command="{x:Static utils:ShortcutCommands.StopCapture}" InputGestureText="Ctrl+Shift+E" />
                 </MenuItem>
                 <MenuItem Header="Scripts">
                     <MenuItem Command="{x:Static utils:ShortcutCommands.OpenScript}" InputGestureText="Ctrl+F7" />
