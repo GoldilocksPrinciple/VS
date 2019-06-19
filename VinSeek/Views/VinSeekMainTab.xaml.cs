@@ -31,17 +31,19 @@ namespace VinSeek.Views
     /// </summary>
     public partial class VinSeekMainTab : System.Windows.Controls.UserControl
     {
-        //private DeviceListWindow _deviceListWindow;
-        //private ICaptureDevice _device;
-        //private List<CapturedPacketsInfo> _capturedPacketsInfoList;
         private MainWindow _mainWindow = System.Windows.Application.Current.MainWindow as MainWindow;
-        //private bool _backgroundThreadStop = false;
         private List<CapturedPacketInfo> _capturedPacketsInfoList;
-        //private static CaptureFileWriterDevice _captureFileWriter;
         private MemoryStream _selectedDataStream;
         private MachinaPacketCapture _captureWorker;
         private Thread _captureThread;
+        private bool captureStarted;
+
+        // SharpPcap variables
+        /*private List<CapturedPacketsInfo> _capturedPacketsInfoList;
         public bool captureStarted = false;
+        private DeviceListWindow _deviceListWindow;
+        private ICaptureDevice _device;
+        private bool _backgroundThreadStop = false;*/
 
         public List<CapturedPacketInfo> CapturedPacketsList { get; set; }
 
@@ -60,6 +62,7 @@ namespace VinSeek.Views
             HexEditor.Stream = data;
         }
 
+        #region Machina
         public void StartCapturePackets()
         {
             if (_captureWorker != null)
@@ -116,6 +119,8 @@ namespace VinSeek.Views
             Dispatcher.Invoke((Action)(() =>
             {
                 PacketListView.Items.Add(packetInfo);
+                
+                // auto scroll to the end of the list when new item is added
                 //PacketListView.ScrollIntoView(packetInfo);
             }));
         }
@@ -139,116 +144,42 @@ namespace VinSeek.Views
 
         }
 
-        #region SharpPcap
-        /*public void StartCapturePackets()
+        public void UpdateNumberOfPackets(string direction, int count)
         {
-            _deviceListWindow = new DeviceListWindow();
-            _deviceListWindow.Show();
-            _deviceListWindow.OnItemSelected += DeviceListWindow_OnItemSelected;
-            _deviceListWindow.OnCancel += DeviceListWindow_OnCancel;
-        }
-
-        private void DeviceListWindow_OnCancel()
-        {
-            Environment.Exit(0);
-        }
-
-        private async void DeviceListWindow_OnItemSelected(int itemIndex)
-        {
-            _deviceListWindow.Hide();
-            /*new Thread(delegate ()
+            if (direction == "Init")
             {
-                StartCapture(itemIndex);
-            }).Start();
-            await Task.Run(() => StartCapture(itemIndex));
-        }
-
-        private void StartCapture(int itemIndex) //TODO: Figure out why new capture didn't start after stopping the previous capture
-        {
-            Dispatcher.Invoke((Action)(() =>
-            {
-                _mainWindow.StartCaptureMenuItem.IsEnabled = false;
-                PacketListView.ItemsSource = null;
-            }));
-
-            _capturedPacketsInfoList = new List<CapturedPacketsInfo>();
-            _capturedPackets = new List<Packet>();
-            _device = CaptureDeviceList.Instance[itemIndex];
-
-            // Open the device for capturing
-            int readTimeoutMilliseconds = 0;
-            _device.Open(DeviceMode.Promiscuous, readTimeoutMilliseconds);
-            _device.Filter = "tcp port 27015"; // Vindictus port
-
-            RawCapture rawCapture;
-
-            // Capture packets using GetNextPacket()
-            while ((rawCapture = _device.GetNextPacket()) != null)
-            {
-                if (_backgroundThreadStop)
+                Dispatcher.Invoke((Action)(() =>
                 {
-                    _device.Close();
-                    break;
-                }
-
-                var pack = PacketDotNet.Packet.ParsePacket(rawCapture.LinkLayerType, rawCapture.Data);
-                _capturedPackets.Add(pack);
-                var tcp = (TcpPacket)pack.Extract(typeof(TcpPacket));
-                if (tcp != null)
-                {
-                    IPPacket iPPacket = (IPPacket)tcp.ParentPacket;
-
-                    // read packet information
-                    var sourceIP = iPPacket.SourceAddress.ToString();
-                    var destIP = iPPacket.DestinationAddress.ToString();
-                    var protocol = iPPacket.Protocol.ToString();
-                    var len = rawCapture.Data.Length.ToString();
-                    var data = pack.PayloadPacket.PayloadPacket.PayloadData;
-
-                    // update PacketListView
-                    Dispatcher.Invoke((Action)(() =>
-                    {
-                        _capturedPacketsInfoList.Add(new CapturedPacketsInfo() { SourceIP = sourceIP, DestIP = destIP, Protocol = protocol, Length = len, Data = data });
-                        PacketListView.ItemsSource = _capturedPacketsInfoList;
-                        PacketListView.Items.Refresh();
-                    }));
-                }
+                    PacketSentText.Text = "Sent: " + count.ToString();
+                    PacketReceivedText.Text = "Received: " + count.ToString();
+                }));
             }
+            else if (direction == "Sent")
+            {
+                Dispatcher.Invoke((Action)(() =>
+                {
+                    PacketSentText.Text = "Sent: " + count.ToString();
+                }));
+            }
+            else if (direction == "Received")
+            {
+                Dispatcher.Invoke((Action)(() =>
+                {
+                    PacketReceivedText.Text = "Received: " + count.ToString();
+                }));
+            }
+            else
+                return;
         }
 
-        public void StopCapturePackets()
+        public void UpdateCaptureProcessInfo(string text)
         {
             Dispatcher.Invoke((Action)(() =>
             {
-                _mainWindow.StartCaptureMenuItem.IsEnabled = true;
+                ProcessInfoText.Text = text;
             }));
-            _backgroundThreadStop = true;
         }
-        
-        public class CapturedPacketsInfo
-        {
-            public string SourceIP { get; set; }
-            public string DestIP { get; set; }
-            public string Protocol { get; set; }
-            public string Length { get; set; }
-            public byte[] Data { get; set; }
 
-        }
-        
-        private void PacketListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (PacketListView.SelectedIndex == -1)
-                return;
-
-            if (_capturedPacketsInfoList.Count == 0)
-                return;
-
-            var data = _capturedPacketsInfoList[PacketListView.SelectedIndex].Data;
-
-            MemoryStream selecteDataStream = new MemoryStream(data);
-
-            LoadDataFromStream(selecteDataStream);
-        }*/
         #endregion
 
         #region Export Packets
@@ -300,42 +231,144 @@ namespace VinSeek.Views
         }
         #endregion
 
-        public void UpdateNumberOfPackets(string direction, int count)
+        #region SharpPcap
+        /*
+        public void StartCapturePackets()
         {
-            if (direction == "Init")
-            {
-                Dispatcher.Invoke((Action)(() =>
-                {
-                    PacketSentText.Text = "Sent: " + count.ToString();
-                    PacketReceivedText.Text = "Received: " + count.ToString();
-                }));
-            }
-            else if (direction == "Sent")
-            {
-                Dispatcher.Invoke((Action)(() =>
-                {
-                    PacketSentText.Text = "Sent: " + count.ToString();
-                }));
-            }
-            else if (direction == "Received")
-            {
-                Dispatcher.Invoke((Action)(() =>
-                {
-                    PacketReceivedText.Text = "Received: " + count.ToString();
-                }));
-            }
-            else
-                return;
+            _deviceListWindow = new DeviceListWindow();
+            _deviceListWindow.Show();
+            _deviceListWindow.OnItemSelected += DeviceListWindow_OnItemSelected;
+            _deviceListWindow.OnCancel += DeviceListWindow_OnCancel;
         }
 
-        public void UpdateCaptureProcessInfo(string text)
+        private void DeviceListWindow_OnCancel()
+        {
+            Environment.Exit(0);
+        }
+
+        private async void DeviceListWindow_OnItemSelected(int itemIndex)
+        {
+            _deviceListWindow.Hide();
+            new Thread(delegate ()
+            {
+                StartCapture(itemIndex);
+            }).Start();
+            await Task.Run(() => StartCapture(itemIndex));
+        }
+
+        private void StartCapture(int itemIndex) //TODO: Figure out why new capture didn't start after stopping the previous capture
         {
             Dispatcher.Invoke((Action)(() =>
             {
-                ProcessInfoText.Text = text;
+                _mainWindow.StartCaptureMenuItem.IsEnabled = false;
+                PacketListView.ItemsSource = null;
             }));
+
+            _capturedPacketsInfoList = new List<CapturedPacketsInfo>();
+            _device = CaptureDeviceList.Instance[itemIndex];
+
+            // Open the device for capturing
+            int readTimeoutMilliseconds = 0;
+            _device.Open(DeviceMode.Promiscuous, readTimeoutMilliseconds);
+            _device.Filter = "tcp port 27015"; // Vindictus port
+
+            RawCapture rawCapture;
+
+            int packetSent = 0;
+            int packetReceived = 0;
+
+            // Capture packets using GetNextPacket()
+            while ((rawCapture = _device.GetNextPacket()) != null)
+            {
+                if (_backgroundThreadStop)
+                {
+                    _device.Close();
+                    break;
+                }
+
+                var pack = PacketDotNet.Packet.ParsePacket(rawCapture.LinkLayerType, rawCapture.Data);
+                var tcp = (TcpPacket)pack.Extract(typeof(TcpPacket));
+                if (tcp != null)
+                {
+                    IPPacket iPPacket = (IPPacket)tcp.ParentPacket;
+
+                    // read packet information
+                    string direction;
+                    var sourceIP = iPPacket.SourceAddress.ToString();
+                    var destIP = iPPacket.DestinationAddress.ToString();
+                    var sourcePort = tcp.SourcePort.ToString();
+                    var destPort = tcp.DestinationPort.ToString();
+                    var protocol = iPPacket.Protocol.ToString();
+                    var len = rawCapture.Data.Length.ToString();
+                    var data = pack.PayloadPacket.PayloadPacket.PayloadData;
+
+                    if (sourcePort == "27015")
+                    {
+                        direction = "Received";
+                        packetReceived++;
+                    }
+                    else
+                    {
+                        direction = "Sent";
+                        packetSent++;
+                    }
+
+                    UpdateNumberOfPackets("Sent", packetSent);
+                    UpdateNumberOfPackets("Received", packetReceived);
+
+                    Debug.WriteLine(rawCapture.Data.Length.GetType());
+
+                    var packet = new CapturedPacketsInfo() { Direction = direction, SourceIP = sourceIP, DestIP = destIP, SourcePort = sourcePort, DestPort = destPort, Protocol = protocol, Length = len, Data = data };
+                    _capturedPacketsInfoList.Add(packet);
+                    // update PacketListView
+                    Dispatcher.Invoke((Action)(() =>
+                    {
+                        PacketListView.Items.Add(packet);
+                    }));
+                }
+            }
+        }
+
+        public void StopCapturePackets()
+        {
+            Dispatcher.Invoke((Action)(() =>
+            {
+                _mainWindow.StartCaptureMenuItem.IsEnabled = true;
+            }));
+            _backgroundThreadStop = true;
         }
         
+        public class CapturedPacketsInfo
+        {
+            public string Direction { get; set; }
+            public string SourceIP { get; set; }
+            public string DestIP { get; set; }
+            public string SourcePort { get; set; }
+            public string DestPort { get; set; }
+            public string Protocol { get; set; }
+            public string Length { get; set; }
+            public byte[] Data { get; set; }
+
+        }
+        
+        private void PacketListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (PacketListView.SelectedIndex == -1)
+                return;
+
+            if (_capturedPacketsInfoList.Count == 0)
+                return;
+
+            var data = _capturedPacketsInfoList[PacketListView.SelectedIndex].Data;
+
+            _selectedDataStream = new MemoryStream(data);
+
+            Dispatcher.Invoke((Action)(() =>
+            {
+                LoadDataFromStream(_selectedDataStream);
+            }));
+        }*/
+        #endregion
     }
 }
 

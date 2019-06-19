@@ -30,11 +30,9 @@ namespace VinSeek.Utils
         public void Start()
         {
             _processId = 0;
-            
+
             while (!_stopCapturing)
             {
-                Debug.WriteLine("Still running");
-
                 Process[] vindictusProcess = Process.GetProcessesByName("Vindictus");
 
                 if (vindictusProcess.Length > 0) // can't be more than 1 instance... 
@@ -51,15 +49,15 @@ namespace VinSeek.Utils
                     _currentVinSeekTab.UpdateCaptureProcessInfo(info);
                 }
             }
-            
+
             if (foundProcessId)
             {
                 Debug.WriteLine("Starting capture monitor");
                 TCPNetworkMonitor monitor = new TCPNetworkMonitor();
                 monitor.ProcessID = _processId;
                 monitor.MonitorType = TCPNetworkMonitor.NetworkMonitorType.WinPCap;
-                monitor.DataReceived += (string connection, TCPConnection tcpConnection, byte[] data, int packetLength) => DataReceived(connection, tcpConnection, data, packetLength);
-                monitor.DataSent += (string connection, TCPConnection tcpConnection, byte[] data, int packetLength) => DataSent(connection, tcpConnection, data, packetLength);
+                monitor.DataReceived += (string connection, TCPConnection tcpConnection, byte[] data) => DataReceived(connection, tcpConnection, data);
+                monitor.DataSent += (string connection, TCPConnection tcpConnection, byte[] data) => DataSent(connection, tcpConnection, data);
                 monitor.Start();
 
                 _currentVinSeekTab.UpdateNumberOfPackets("Init", 0);
@@ -83,41 +81,46 @@ namespace VinSeek.Utils
             }
         }
 
-        private void DataReceived(string connection, TCPConnection tcpConnection, byte[] data, int packetLength)
+        private void DataReceived(string connection, TCPConnection tcpConnection, byte[] data)
         {
-            var item = new CapturedPacketInfo
+            if (tcpConnection.RemotePort.ToString() == "27015")
             {
-                Direction = "Received",
-                SourceIP = new IPAddress(tcpConnection.RemoteIP).ToString(),
-                DestIP = new IPAddress(tcpConnection.LocalIP).ToString(),
-                SourcePort = tcpConnection.RemotePort.ToString(),
-                DestPort = tcpConnection.LocalPort.ToString(),
-                Protocol = IPProtocol.TCP,
-                Length = packetLength,
-                Data = data,
-            };
-            _packetReceived++;
-            _currentVinSeekTab.AddPacketToList(item);
-            _currentVinSeekTab.UpdateNumberOfPackets("Received", _packetReceived);
+                var item = new CapturedPacketInfo
+                {
+                    Direction = "Received",
+                    SourceIP = new IPAddress(tcpConnection.RemoteIP).ToString(),
+                    DestIP = new IPAddress(tcpConnection.LocalIP).ToString(),
+                    SourcePort = tcpConnection.RemotePort.ToString(),
+                    DestPort = tcpConnection.LocalPort.ToString(),
+                    Protocol = IPProtocol.TCP,
+                    Length = data.Length,
+                    Data = data,
+                };
+                _packetReceived++;
+                _currentVinSeekTab.AddPacketToList(item);
+                _currentVinSeekTab.UpdateNumberOfPackets("Received", _packetReceived);
+            }
         }
 
-        private void DataSent(string connection, TCPConnection tcpConnection, byte[] data, int packetLength)
+        private void DataSent(string connection, TCPConnection tcpConnection, byte[] data)
         {
-            var item = new CapturedPacketInfo
+            if (tcpConnection.RemotePort.ToString() == "27015")
             {
-                Direction = "Sent",
-                SourceIP = new IPAddress(tcpConnection.LocalIP).ToString(),
-                DestIP = new IPAddress(tcpConnection.RemoteIP).ToString(),
-                SourcePort = tcpConnection.LocalPort.ToString(),
-                DestPort = tcpConnection.RemotePort.ToString(),
-                Protocol = IPProtocol.TCP,
-                Length = packetLength,
-                Data = data,
-            };
-            _packetSent++;
-            _currentVinSeekTab.AddPacketToList(item);
-            _currentVinSeekTab.UpdateNumberOfPackets("Sent", _packetSent);
+                var item = new CapturedPacketInfo
+                {
+                    Direction = "Sent",
+                    SourceIP = new IPAddress(tcpConnection.LocalIP).ToString(),
+                    DestIP = new IPAddress(tcpConnection.RemoteIP).ToString(),
+                    SourcePort = tcpConnection.LocalPort.ToString(),
+                    DestPort = tcpConnection.RemotePort.ToString(),
+                    Protocol = IPProtocol.TCP,
+                    Length = data.Length,
+                    Data = data,
+                };
+                _packetSent++;
+                _currentVinSeekTab.AddPacketToList(item);
+                _currentVinSeekTab.UpdateNumberOfPackets("Sent", _packetSent);
+            }
         }
-
     }
 }

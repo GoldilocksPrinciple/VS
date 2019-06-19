@@ -63,7 +63,7 @@ namespace VinSeek.Views
                 }
             }
         }
-
+        
         public void ExportPacketsToFile()
         {
             if (!StartCaptureMenuItem.IsEnabled)
