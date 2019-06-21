@@ -9,17 +9,22 @@ namespace VinSeek.Utils
 {
     public static class CustomPacketBuilder
     {
-        public static byte[] BuildPacket(byte[] buffer)
+        public static byte[] BuildPacket(string localIP, string remoteIP, string localPort, byte[] buffer)
         {
-            byte[] head = new byte[0x18];
-            using (MemoryStream stream = new MemoryStream(head))
+            using (MemoryStream stream = new MemoryStream())
             {
-                stream.WriteByte(0x01);
+                byte[] localIPBytes = Encoding.ASCII.GetBytes(localIP);
+                byte[] remoteIPBytes = Encoding.ASCII.GetBytes(remoteIP);
+                byte[] localPortBytes = Encoding.ASCII.GetBytes(localPort);
+                stream.Write(localIPBytes, 0, localIPBytes.Length);
 
-                stream.Position = 0x04;
-                stream.Write(BitConverter.GetBytes((UInt16)buffer.Length), 0, 2);
+                stream.Position = 0x10;
+                stream.Write(remoteIPBytes, 0, remoteIPBytes.Length);
 
-                stream.WriteByte(0x01);
+                stream.Position = 0x20;
+                stream.Write(localPortBytes, 0, localPortBytes.Length);
+
+                stream.WriteByte(0x00);
 
                 List<byte> output = new List<byte>(buffer);
                 output.InsertRange(0, stream.ToArray());
