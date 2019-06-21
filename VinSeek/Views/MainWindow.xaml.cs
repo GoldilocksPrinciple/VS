@@ -17,6 +17,9 @@ using System.Diagnostics;
 using System.IO;
 using VinSeek.Model;
 using VinSeek.Utils;
+using Machina;
+using System.Threading;
+using System.Text.RegularExpressions;
 
 namespace VinSeek.Views
 {
@@ -29,15 +32,29 @@ namespace VinSeek.Views
         public MainWindow()
         {
             InitializeComponent();
-            item = new TabItem();
-            // create default new tab
-            Dispatcher.Invoke((Action)(() =>
+
+            FileAssociationManager.SetAssociation(".vspcap", "VinSeek", FileAssociationManager.AssemmblyExecutablePath(), "VinSeek Packet Capture File");
+
+            if (App.fileName != null)
             {
+                var item = new TabItem();
                 item.Content = new VinSeekMainTab();
-                item.Header = "New";
+                item.Header = System.IO.Path.GetFileName(App.fileName);
                 MainTabControl.Items.Add(item);
-            }));
-            
+                item.Focus();
+                ((VinSeekMainTab)item.Content).LoadPacketInfoFromFile(App.fileName);
+            }
+            else
+            {
+                item = new TabItem();
+                // create default new tab
+                Dispatcher.Invoke((Action)(() =>
+                {
+                    item.Content = new VinSeekMainTab();
+                    item.Header = "Start";
+                    MainTabControl.Items.Add(item);
+                }));
+            }
         }
 
         public void OpenFile()
@@ -50,73 +67,39 @@ namespace VinSeek.Views
                 if ((dialog.ShowDialog() == CommonFileDialogResult.Ok ? dialog.FileName : null) != null)
                 {
                     var item = new TabItem();
-                    // create new tab for the opened file
-                    Dispatcher.Invoke((Action)(() =>
+                    item.Content = new VinSeekMainTab();
+                    item.Header = System.IO.Path.GetFileName(dialog.FileName);
+                    MainTabControl.Items.Add(item);
+                    item.Focus();
+
+                    ((VinSeekMainTab)item.Content).Dispatcher.Invoke((Action)(() =>
                     {
-                        item.Content = new VinSeekMainTab();
-                        item.Header = System.IO.Path.GetFileName(dialog.FileName);
-                        MainTabControl.Items.Add(item);
-                        item.Focus();
-                        // load data into hex box
-                        ((VinSeekMainTab)item.Content).LoadDataFromFile(dialog.FileName);
+                        if (System.IO.Path.GetExtension(dialog.FileName) != ".vspcap") // if not file that can extract info -> only get the data dump
+                        {
+                            // load data into hex box
+                            ((VinSeekMainTab)item.Content).LoadDataFromFile(dialog.FileName);
+                        }
+                        else
+                        {
+                            ((VinSeekMainTab)item.Content).LoadPacketInfoFromFile(dialog.FileName);
+                        }
                     }));
                 }
             }
         }
         
-        public void ExportPacketsToFile()
-        {
-            if (!StartCaptureMenuItem.IsEnabled)
-                return;
-
-            var packets = ((VinSeekMainTab)item.Content).CapturedPacketsInfoList;
-
-            if (packets.Count == 0)
-                return;
-
-            Debug.WriteLine("Packet count = " + packets.Count.ToString());
-
-            if (packets.Count == 1)
-            {
-                var packet = ((VinSeekMainTab)item.Content).CapturedPacketsInfoList[0];
-
-                CommonSaveFileDialog exportDiag = new CommonSaveFileDialog();
-                exportDiag.AlwaysAppendDefaultExtension = true;
-                exportDiag.DefaultExtension = ".dat";
-                exportDiag.DefaultFileName = "MyCapture";
-                exportDiag.Filters.Add(new CommonFileDialogFilter("Data files", "*.dat"));
-
-                if (exportDiag.ShowDialog() == CommonFileDialogResult.Ok)
-                {
-                    File.WriteAllBytes(exportDiag.FileName, CustomPacketBuilder.BuildPacket(packet.Data));
-                    MessageBox.Show($"Packet successfully saved to {exportDiag.FileName}.", "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
-                }
-            }
-            else
-            {
-                using (CommonOpenFileDialog dialog = new CommonOpenFileDialog { IsFolderPicker = true })
-                {
-                    dialog.Title = "Select a folder to save packets";
-
-                    if ((dialog.ShowDialog() == CommonFileDialogResult.Ok ? dialog.FileName : null) != null)
-                    {
-                        int count = 0;
-                        var currentDate = DateTime.Now.ToString("MM-dd-yy");
-                        foreach (CapturedPacketInfo packet in packets)
-                        {
-                            File.WriteAllBytes(System.IO.Path.Combine(dialog.FileName, currentDate + "-CaptureNo" + count.ToString() + ".dat"), CustomPacketBuilder.BuildPacket(packet.Data));
-                            count++;
-                        }
-                        MessageBox.Show($"Packets successfully saved to {dialog.FileName}.", "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
-                    }
-                }
-            }
-        }
-
         #region Command Handlers
         private void NewTabCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Debug.WriteLine("New Tab.");
+            Dispatcher.Invoke((Action)(() =>
+            {
+                var item = new TabItem();
+                item.Content = new VinSeekMainTab();
+                item.Header = "New";
+                MainTabControl.Items.Add(item);
+                item.Focus();
+            }));
         }
         private void OpenFileCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
@@ -131,14 +114,13 @@ namespace VinSeek.Views
         {
             Debug.WriteLine("Save File As.");
         }
-        private void ExportPacketsCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
-        {
-            Debug.WriteLine("Export Packets.");
-            ExportPacketsToFile();
-        }
         private void CloseTabCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Debug.WriteLine("Close Tab.");
+            Dispatcher.Invoke((Action)(() =>
+            {
+                MainTabControl.Items.Remove(MainTabControl.SelectedIndex);
+            }));
         }
         private void CloseAllTabCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {

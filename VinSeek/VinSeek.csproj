@@ -39,6 +39,9 @@
   <PropertyGroup>
     <ApplicationIcon>Resources\vindictus_vinseek_icon.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
@@ -104,6 +107,7 @@
     </ApplicationDefinition>
     <Compile Include="Model\CapturedPacketInfo.cs" />
     <Compile Include="Utils\CustomPacketBuilder.cs" />
+    <Compile Include="Utils\FileAssociationManager.cs" />
     <Compile Include="Utils\MachinaPacketCapture.cs" />
     <Compile Include="Utils\ShortcutCommands.cs" />
     <Compile Include="Views\DeviceListWindow.xaml.cs">
@@ -151,6 +155,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="app.manifest">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
