@@ -79,12 +79,13 @@
                             </ListView.Resources>
                             <ListView.View>
                                 <GridView>
-                                    <GridViewColumn Header="Source Address" Width="250" DisplayMemberBinding="{Binding SourceIP}" />
-                                    <GridViewColumn Header="Destination Address" Width="250" DisplayMemberBinding="{Binding DestIP}" />
-                                    <GridViewColumn Header="Source Port" Width="180" DisplayMemberBinding="{Binding SourcePort}" />
-                                    <GridViewColumn Header="Destination Port" Width="180" DisplayMemberBinding="{Binding DestPort}" />
+                                    <GridViewColumn Header="Local IP Address" Width="250" DisplayMemberBinding="{Binding LocalIP}" />
+                                    <GridViewColumn Header="Remote IP Address" Width="250" DisplayMemberBinding="{Binding RemoteIP}" />
+                                    <GridViewColumn Header="Local Port" Width="180" DisplayMemberBinding="{Binding LocalPort}" />
+                                    <GridViewColumn Header="Remote Port" Width="180" DisplayMemberBinding="{Binding RemotePort}" />
                                     <GridViewColumn Header="Protocol" Width="100" DisplayMemberBinding="{Binding Protocol}" />
-                                    <GridViewColumn Header="Data Length" Width="158" DisplayMemberBinding="{Binding Length}" />
+                                    <GridViewColumn Header="Data Length" Width="158" DisplayMemberBinding="{Binding DataLength}" />
+                                    <GridViewColumn Header="TCP Stream ID" Width="110" DisplayMemberBinding="{Binding StreamID}" />
                                 </GridView>
                                 <!--<GridView>
                                     <GridViewColumn Header="Opcode" Width="120" />

@@ -69,7 +69,7 @@ namespace VinSeek.Views
             if (!StartCaptureMenuItem.IsEnabled)
                 return;
 
-            var packets = ((VinSeekMainTab)item.Content).CapturedPacketsList;
+            var packets = ((VinSeekMainTab)item.Content).CapturedPacketsInfoList;
 
             if (packets.Count == 0)
                 return;
@@ -78,7 +78,7 @@ namespace VinSeek.Views
 
             if (packets.Count == 1)
             {
-                var packet = ((VinSeekMainTab)item.Content).CapturedPacketsList[0];
+                var packet = ((VinSeekMainTab)item.Content).CapturedPacketsInfoList[0];
 
                 CommonSaveFileDialog exportDiag = new CommonSaveFileDialog();
                 exportDiag.AlwaysAppendDefaultExtension = true;

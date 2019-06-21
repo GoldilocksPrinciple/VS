@@ -23,6 +23,7 @@ using System.IO;
 using SharpPcap.LibPcap;
 using VinSeek.Model;
 using VinSeek.Utils;
+using System.Collections.ObjectModel;
 
 namespace VinSeek.Views
 {
@@ -32,7 +33,7 @@ namespace VinSeek.Views
     public partial class VinSeekMainTab : System.Windows.Controls.UserControl
     {
         private MainWindow _mainWindow = System.Windows.Application.Current.MainWindow as MainWindow;
-        private List<CapturedPacketInfo> _capturedPacketsInfoList;
+        public ObservableCollection<CapturedPacketInfo> CapturedPacketsInfoList;
         private MemoryStream _selectedDataStream;
         private MachinaPacketCapture _captureWorker;
         private Thread _captureThread;
@@ -45,7 +46,7 @@ namespace VinSeek.Views
         private ICaptureDevice _device;
         private bool _backgroundThreadStop = false;*/
 
-        public List<CapturedPacketInfo> CapturedPacketsList { get; set; }
+        //public ObservableCollection<CapturedPacketInfo> CapturedPacketsList { get; set; }
 
         public VinSeekMainTab()
         {
@@ -76,7 +77,9 @@ namespace VinSeek.Views
                 PacketListView.Items.Refresh();
             }));
 
-            _capturedPacketsInfoList = new List<CapturedPacketInfo>();
+            CapturedPacketsInfoList = new ObservableCollection<CapturedPacketInfo>();
+            PacketListView.ItemsSource = CapturedPacketsInfoList;
+
             _captureWorker = new MachinaPacketCapture(this);
             _captureThread = new Thread(_captureWorker.Start);
             _captureThread.Start();
@@ -103,7 +106,6 @@ namespace VinSeek.Views
             }
 
             _captureWorker = null;
-            CapturedPacketsList = _capturedPacketsInfoList;
 
             Dispatcher.Invoke((Action)(() =>
             {
@@ -114,7 +116,7 @@ namespace VinSeek.Views
 
         public void AddPacketToList(CapturedPacketInfo packetInfo)
         {
-            _capturedPacketsInfoList.Add(packetInfo);
+            CapturedPacketsInfoList.Add(packetInfo);
 
             Dispatcher.Invoke((Action)(() =>
             {
@@ -125,22 +127,19 @@ namespace VinSeek.Views
             }));
         }
 
-        private void PacketListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        public void PacketListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (PacketListView.SelectedIndex == -1)
                 return;
 
-            if (_capturedPacketsInfoList.Count == 0)
+            if (CapturedPacketsInfoList.Count == 0)
                 return;
 
-            var data = _capturedPacketsInfoList[PacketListView.SelectedIndex].Data;
+            var data = CapturedPacketsInfoList[PacketListView.SelectedIndex].Data;
 
             _selectedDataStream = new MemoryStream(data);
 
-            Dispatcher.Invoke((Action)(() =>
-            {
-                LoadDataFromStream(_selectedDataStream);
-            }));
+            LoadDataFromStream(_selectedDataStream);
 
         }
 
@@ -179,7 +178,7 @@ namespace VinSeek.Views
                 ProcessInfoText.Text = text;
             }));
         }
-
+        
         #endregion
 
         #region Export Packets
