@@ -37,7 +37,7 @@ namespace VinSeek.Utils
             {
                 Process[] vindictusProcess = Process.GetProcessesByName("Vindictus");
 
-                if (vindictusProcess.Length > 0) // can't be more than 1 instance... 
+                if (vindictusProcess.Length > 0) // can't be more than 1 instance right... 
                 {
                     _processId = (uint)vindictusProcess[0].Id;
                     string info = "Listening for connection of Process [" + _processId.ToString() + "]";
@@ -87,12 +87,12 @@ namespace VinSeek.Utils
 
         private void DataReceived(string connection, TCPConnection tcpConnection, byte[] data)
         {
-            if (tcpConnection.RemotePort.ToString() != "27015")
+            if (tcpConnection.RemotePort.ToString() != "27015") // display filter
                 return;
             
             _packetReceived++;
-            _currentVinSeekTab.UpdateNumberOfPackets("Received", _packetReceived);
 
+            // first packet of first stream
             if (_currentVinSeekTab.CapturedPacketsInfoList.Count == 0)
             {
                 var pack = NewCapturedPacketInfo(tcpConnection.LocalIP, tcpConnection.RemoteIP, tcpConnection.LocalPort, tcpConnection.RemotePort,
@@ -109,65 +109,78 @@ namespace VinSeek.Utils
                     if (new IPAddress(tcpConnection.LocalIP).ToString() == firstPacket.LocalIP &&
                         new IPAddress(tcpConnection.RemoteIP).ToString() == firstPacket.RemoteIP &&
                         tcpConnection.LocalPort.ToString() == firstPacket.LocalPort &&
-                        tcpConnection.RemotePort.ToString() == firstPacket.RemotePort) // old tcp stream
+                        tcpConnection.RemotePort.ToString() == firstPacket.RemotePort) // check which stream this packet belongs to
                     {
                         oldStream = true;
 
+                        // combine data 
                         byte[] buffer = new byte[data.Length + firstPacket.DataLength];
                         Array.Copy(firstPacket.Data, buffer, firstPacket.DataLength);
                         Array.Copy(data, 0, buffer, firstPacket.DataLength, data.Length);
 
-                        firstPacket.DataLength = buffer.Length;
+                        // set new data and data length of current tcp stream
+                        firstPacket.DataLength = data.Length + firstPacket.DataLength;
                         firstPacket.Data = buffer;
-                        var stream = new MemoryStream(buffer);
-                        _currentVinSeekTab.Dispatcher.Invoke(new Action(() => { _currentVinSeekTab.LoadDataFromStream(stream); }));
                     }
                 }
 
-                if (!oldStream)
+                if (!oldStream) // if paket does not belong to old stream, add a new item to packet list view
                 {
                     _streamId++;
 
                     var pack = NewCapturedPacketInfo(tcpConnection.LocalIP, tcpConnection.RemoteIP, tcpConnection.LocalPort, tcpConnection.RemotePort,
                                         data.Length, data, _streamId);
 
-                    _currentVinSeekTab.Dispatcher.Invoke(new Action(() => { _currentVinSeekTab.CapturedPacketsInfoList.Add(pack); }));
+                    _currentVinSeekTab.Dispatcher.Invoke(new ThreadStart(() => { _currentVinSeekTab.CapturedPacketsInfoList.Add(pack); }));
                 }
             }
-            
+
+            // update view for hexbox of current selected item in packet list view with new data
+            _currentVinSeekTab.Dispatcher.Invoke(new ThreadStart(()
+                                            => { _currentVinSeekTab.UpdateSelectedItemHexBox(_currentVinSeekTab.PacketListView.SelectedIndex); }));
+
+            // update number of received packets
+            _currentVinSeekTab.UpdateNumberOfPackets("Received", _packetReceived);
         }
 
         private void DataSent(string connection, TCPConnection tcpConnection, byte[] data)
         {
-            if (tcpConnection.RemotePort.ToString() != "27015")
+            if (tcpConnection.RemotePort.ToString() != "27015") // display filter
                 return;
 
             _packetSent++;
-            _currentVinSeekTab.UpdateNumberOfPackets("Sent", _packetSent);
 
+            // Note: Does not need to check if sent packet belong to a new stream
+            // New stream always starts with a packet from server, since all SYN and ACK packets have been filtered out
             foreach (CapturedPacketInfo firstPacket in _currentVinSeekTab.CapturedPacketsInfoList)
             {
                 if (new IPAddress(tcpConnection.LocalIP).ToString() == firstPacket.LocalIP &&
                     new IPAddress(tcpConnection.RemoteIP).ToString() == firstPacket.RemoteIP &&
                     tcpConnection.LocalPort.ToString() == firstPacket.LocalPort &&
-                    tcpConnection.RemotePort.ToString() == firstPacket.RemotePort)
+                    tcpConnection.RemotePort.ToString() == firstPacket.RemotePort) // check which stream this packet belongs to
                 {
 
                     byte[] buffer = new byte[data.Length + firstPacket.DataLength];
                     Array.Copy(firstPacket.Data, buffer, firstPacket.DataLength);
                     Array.Copy(data, 0, buffer, firstPacket.DataLength, data.Length);
 
-                    firstPacket.DataLength = buffer.Length;
+                    firstPacket.DataLength = data.Length + firstPacket.DataLength;
                     firstPacket.Data = buffer;
-                    var stream = new MemoryStream(buffer);
-                    _currentVinSeekTab.Dispatcher.Invoke(new Action(() => { _currentVinSeekTab.LoadDataFromStream(stream); })); 
                 }
             }
+
+            // update view for hexbox of current selected item in packet list view with new data
+            _currentVinSeekTab.Dispatcher.Invoke(new ThreadStart(()
+                                            => { _currentVinSeekTab.UpdateSelectedItemHexBox(_currentVinSeekTab.PacketListView.SelectedIndex); }));
+
+            // update number of sent packets
+            _currentVinSeekTab.UpdateNumberOfPackets("Sent", _packetSent);
         }
     
         private CapturedPacketInfo NewCapturedPacketInfo(uint localIP, uint remoteIP, ushort localPort, ushort remotePort, 
                                                             int dataLength, byte[] data, int streamID)
         {
+            // Direction is just for color display. Received = blue, Sent = orange
             var item = new CapturedPacketInfo
             {
                 Direction = "Received",

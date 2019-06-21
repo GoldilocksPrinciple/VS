@@ -71,12 +71,6 @@ namespace VinSeek.Views
 
             captureStarted = true;
 
-            Dispatcher.Invoke((Action)(() =>
-            {
-                PacketListView.Items.Clear();
-                PacketListView.Items.Refresh();
-            }));
-
             CapturedPacketsInfoList = new ObservableCollection<CapturedPacketInfo>();
             PacketListView.ItemsSource = CapturedPacketsInfoList;
 
@@ -97,7 +91,7 @@ namespace VinSeek.Views
             if (!_captureWorker.foundProcessId)
             {
                 _captureWorker.Stop();
-                
+
             }
             else
             {
@@ -121,7 +115,7 @@ namespace VinSeek.Views
             Dispatcher.Invoke((Action)(() =>
             {
                 PacketListView.Items.Add(packetInfo);
-                
+
                 // auto scroll to the end of the list when new item is added
                 //PacketListView.ScrollIntoView(packetInfo);
             }));
@@ -129,18 +123,20 @@ namespace VinSeek.Views
 
         public void PacketListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (PacketListView.SelectedIndex == -1)
-                return;
-
             if (CapturedPacketsInfoList.Count == 0)
                 return;
 
-            var data = CapturedPacketsInfoList[PacketListView.SelectedIndex].Data;
+            UpdateSelectedItemHexBox(PacketListView.SelectedIndex);
+        }
 
+        public void UpdateSelectedItemHexBox(int index)
+        {
+            if (index == -1)
+                return;
+
+            var data = CapturedPacketsInfoList[index].Data;
             _selectedDataStream = new MemoryStream(data);
-
             LoadDataFromStream(_selectedDataStream);
-
         }
 
         public void UpdateNumberOfPackets(string direction, int count)
@@ -178,7 +174,7 @@ namespace VinSeek.Views
                 ProcessInfoText.Text = text;
             }));
         }
-        
+
         #endregion
 
         #region Export Packets
