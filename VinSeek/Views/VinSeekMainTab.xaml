@@ -42,7 +42,8 @@
                         <ListView x:Name="PacketListView" Margin="0,20,0,0" Grid.ColumnSpan="2" SelectionChanged="PacketListView_SelectionChanged">
                             <ListView.ContextMenu>
                                 <ContextMenu>
-                                    <MenuItem Header="Export to DAT" Click="ExportPacket_Click"/>
+                                    <MenuItem Header="Export selected stream to file" Click="ExportPacket_Click"/>
+                                    <MenuItem Header="Import data to list" Click="ImportPacket_Click" />
                                 </ContextMenu>
                             </ListView.ContextMenu>
                             <ListView.Resources>

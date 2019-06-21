@@ -24,6 +24,8 @@ using SharpPcap.LibPcap;
 using VinSeek.Model;
 using VinSeek.Utils;
 using System.Collections.ObjectModel;
+using Machina;
+using System.Text.RegularExpressions;
 
 namespace VinSeek.Views
 {
@@ -51,6 +53,9 @@ namespace VinSeek.Views
         public VinSeekMainTab()
         {
             InitializeComponent();
+
+            CapturedPacketsInfoList = new ObservableCollection<CapturedPacketInfo>();
+            PacketListView.ItemsSource = CapturedPacketsInfoList;
         }
 
         public void LoadDataFromFile(string fileName)
@@ -123,10 +128,14 @@ namespace VinSeek.Views
 
         public void PacketListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (CapturedPacketsInfoList.Count == 0)
-                return;
+            Dispatcher.Invoke((Action)(() =>
+            {
+                if (CapturedPacketsInfoList.Count == 0)
+                    return;
 
-            UpdateSelectedItemHexBox(PacketListView.SelectedIndex);
+                UpdateSelectedItemHexBox(PacketListView.SelectedIndex);
+            }));
+            
         }
 
         public void UpdateSelectedItemHexBox(int index)
@@ -174,10 +183,9 @@ namespace VinSeek.Views
                 ProcessInfoText.Text = text;
             }));
         }
-
         #endregion
 
-        #region Export Packets
+        #region Export, Import Packets
         private void ExportPacket_Click(object sender, RoutedEventArgs e)
         {
             var packets = PacketListView.SelectedItems;
@@ -193,15 +201,19 @@ namespace VinSeek.Views
 
                     CommonSaveFileDialog exportDiag = new CommonSaveFileDialog();
                     exportDiag.AlwaysAppendDefaultExtension = true;
-                    exportDiag.DefaultExtension = ".dat";
+                    exportDiag.DefaultExtension = ".vspcap";
                     exportDiag.DefaultFileName = "MyCapture";
-                    exportDiag.Filters.Add(new CommonFileDialogFilter("Data files", "*.dat"));
+                    exportDiag.Filters.Add(new CommonFileDialogFilter("VinSeek Packet Capture File", "*.vspcap"));
 
-                    if (exportDiag.ShowDialog() == CommonFileDialogResult.Ok)
+                    Dispatcher.Invoke((Action)(() =>
                     {
-                        File.WriteAllBytes(exportDiag.FileName, CustomPacketBuilder.BuildPacket(packet.Data));
-                        System.Windows.MessageBox.Show($"Packet successfully saved to {exportDiag.FileName}.", "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
-                    }
+                        if (exportDiag.ShowDialog() == CommonFileDialogResult.Ok)
+                        {
+                            File.WriteAllBytes(exportDiag.FileName, CustomPacketBuilder.BuildPacket(packet.LocalIP, packet.RemoteIP,
+                                                                                                    packet.LocalPort, packet.Data));
+                            System.Windows.MessageBox.Show($"Packet successfully saved to {exportDiag.FileName}.", "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                        }
+                    }));
                 }
                 else
                 {
@@ -209,20 +221,102 @@ namespace VinSeek.Views
                     {
                         dialog.Title = "Select a folder to save packets";
 
-                        if ((dialog.ShowDialog() == CommonFileDialogResult.Ok ? dialog.FileName : null) != null)
+                        Dispatcher.Invoke((Action)(() =>
                         {
-                            int count = 0;
-                            var currentDate = DateTime.Now.ToString("MM-dd-yy");
-                            foreach (CapturedPacketInfo packet in packets)
+                            if ((dialog.ShowDialog() == CommonFileDialogResult.Ok ? dialog.FileName : null) != null)
                             {
-                                File.WriteAllBytes(System.IO.Path.Combine(dialog.FileName, currentDate + "-CaptureNo" + count.ToString() + ".dat"), CustomPacketBuilder.BuildPacket(packet.Data));
-                                count++;
+                                var currentDate = DateTime.Now.ToString("MM-dd-yy");
+                                foreach (CapturedPacketInfo packet in packets)
+                                {
+                                    File.WriteAllBytes(System.IO.Path.Combine(dialog.FileName, currentDate + "-CaptureStream" + packet.StreamID + ".vspcap"), 
+                                                        CustomPacketBuilder.BuildPacket(packet.LocalIP, packet.RemoteIP, packet.LocalPort, packet.Data));
+                                }
+                                System.Windows.MessageBox.Show($"Packets successfully saved to {dialog.FileName}.", "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
                             }
-                            System.Windows.MessageBox.Show($"Packets successfully saved to {dialog.FileName}.", "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
-                        }
+                        }));
                     }
                 }
             }
+        }
+
+        private void ImportPacket_Click(object sender, RoutedEventArgs e)
+        {
+            Dispatcher.Invoke((Action)(() =>
+            {
+                using (CommonOpenFileDialog dialog = new CommonOpenFileDialog { IsFolderPicker = false })
+                {
+                    dialog.Title = "Select a file to open";
+                    // do nothing if no file is selected
+                    if ((dialog.ShowDialog() == CommonFileDialogResult.Ok ? dialog.FileName : null) != null)
+                    {
+                        Dispatcher.Invoke((Action)(() =>
+                        {
+                            if (System.IO.Path.GetExtension(dialog.FileName) != ".vspcap") // if not file that can extract info -> only get the data dump
+                            {
+                                System.Windows.MessageBox.Show($"Error importing! {dialog.FileName} is not a VinSeek Packet Capture File. Please use open file function instead", 
+                                    "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                            }
+                            else
+                            {
+                                LoadPacketInfoFromFile(dialog.FileName);
+                            }
+                        }));
+                    }
+                }
+            }));
+            
+            return;
+        }
+
+        public void LoadPacketInfoFromFile(string filename)
+        {
+            byte[] fileData = File.ReadAllBytes(filename);
+            byte[] localIPBytes = new byte[16];
+            byte[] remoteIPBytes = new byte[16];
+            byte[] localPortBytes = new byte[6];
+            byte[] data = new byte[fileData.Length - 38];
+
+            Array.Copy(fileData, localIPBytes, 15);
+            var localIP = Encoding.ASCII.GetString(localIPBytes);
+            localIP = Regex.Replace(localIP, @"[^\u0020-\u007E]", string.Empty);
+
+            Array.Copy(fileData, 16, remoteIPBytes, 0, 16);
+            var remoteIP = Encoding.ASCII.GetString(remoteIPBytes);
+            remoteIP = Regex.Replace(remoteIP, @"[^\u0020-\u007E]", string.Empty);
+
+            Array.Copy(fileData, 32, localPortBytes, 0, 6);
+            var localPort = Encoding.ASCII.GetString(localPortBytes);
+            localPort = Regex.Replace(localPort, @"[^\u0020-\u007E]", string.Empty);
+
+            Array.Copy(fileData, 38, data, 0, fileData.Length - 38);
+
+            int streamId;
+            int temp = CapturedPacketsInfoList.Count;
+
+            if (temp == 0)
+                streamId = 0;
+            else
+                streamId = temp++;
+
+            // create new tab for the opened file
+            Dispatcher.Invoke((Action)(() =>
+            {
+                var pack = new CapturedPacketInfo
+                {
+                    Direction = "Received",
+                    LocalIP = localIP.ToString(),
+                    RemoteIP = remoteIP.ToString(),
+                    LocalPort = localPort,
+                    RemotePort = "27015",
+                    Protocol = IPProtocol.TCP,
+                    DataLength = data.Length,
+                    Data = data,
+                    StreamID = streamId
+                };
+                // load data into hex box
+                Dispatcher.Invoke(new ThreadStart(()
+                => { CapturedPacketsInfoList.Add(pack); }));
+            }));
         }
         #endregion
 

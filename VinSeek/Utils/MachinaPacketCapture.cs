@@ -119,7 +119,7 @@ namespace VinSeek.Utils
                         Array.Copy(data, 0, buffer, firstPacket.DataLength, data.Length);
 
                         // set new data and data length of current tcp stream
-                        firstPacket.DataLength = data.Length + firstPacket.DataLength;
+                        firstPacket.DataLength = data.Length + firstPacket.DataLength; // buffer.Length does not notify UI to change fast enough
                         firstPacket.Data = buffer;
                     }
                 }
