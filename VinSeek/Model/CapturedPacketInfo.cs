@@ -19,10 +19,10 @@ namespace VinSeek.Model
         private byte[] _data;
         
         public string Direction { get; set; }
-        public string LocalIP { get; set; }
-        public string RemoteIP { get; set; }
-        public string LocalPort { get; set; }
-        public string RemotePort { get; set; }
+        public string SourceIP { get; set; }
+        public string DestIP { get; set; }
+        public string SourcePort { get; set; }
+        public string DestPort { get; set; }
         public IPProtocol Protocol { get; set; }
         public int DataLength
         {
@@ -49,8 +49,6 @@ namespace VinSeek.Model
                 }
             }
         }
-
-        public int StreamID { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
         public void OnPropertyChanged(String propertyName)

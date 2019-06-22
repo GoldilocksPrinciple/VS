@@ -79,6 +79,10 @@ namespace VinSeek.Views
                             // load data into hex box
                             ((VinSeekMainTab)item.Content).LoadDataFromFile(dialog.FileName);
                         }
+                        else if (System.IO.Path.GetExtension(dialog.FileName) != ".pcap")
+                        {
+                            // TODO: Handle pcap file. Either use SharpPcap or PcapDotNet function to read pcap file
+                        }
                         else
                         {
                             ((VinSeekMainTab)item.Content).LoadPacketInfoFromFile(dialog.FileName);

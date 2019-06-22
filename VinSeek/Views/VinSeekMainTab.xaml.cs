@@ -154,22 +154,22 @@ namespace VinSeek.Views
             {
                 Dispatcher.Invoke((Action)(() =>
                 {
-                    PacketSentText.Text = "Sent: " + count.ToString();
-                    PacketReceivedText.Text = "Received: " + count.ToString();
+                    PacketSentText.Text = "Client: " + count.ToString();
+                    PacketReceivedText.Text = "Server: " + count.ToString();
                 }));
             }
             else if (direction == "Sent")
             {
                 Dispatcher.Invoke((Action)(() =>
                 {
-                    PacketSentText.Text = "Sent: " + count.ToString();
+                    PacketSentText.Text = "Client: " + count.ToString();
                 }));
             }
             else if (direction == "Received")
             {
                 Dispatcher.Invoke((Action)(() =>
                 {
-                    PacketReceivedText.Text = "Received: " + count.ToString();
+                    PacketReceivedText.Text = "Server: " + count.ToString();
                 }));
             }
             else
@@ -209,8 +209,8 @@ namespace VinSeek.Views
                     {
                         if (exportDiag.ShowDialog() == CommonFileDialogResult.Ok)
                         {
-                            File.WriteAllBytes(exportDiag.FileName, CustomPacketBuilder.BuildPacket(packet.LocalIP, packet.RemoteIP,
-                                                                                                    packet.LocalPort, packet.Data));
+                            File.WriteAllBytes(exportDiag.FileName, CustomPacketBuilder.BuildPacket(packet.SourceIP, packet.DestIP,
+                                                                                                    packet.SourcePort, packet.DestPort, packet.Data));
                             System.Windows.MessageBox.Show($"Packet successfully saved to {exportDiag.FileName}.", "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
                         }
                     }));
@@ -226,10 +226,13 @@ namespace VinSeek.Views
                             if ((dialog.ShowDialog() == CommonFileDialogResult.Ok ? dialog.FileName : null) != null)
                             {
                                 var currentDate = DateTime.Now.ToString("MM-dd-yy");
+                                int count = 0;
                                 foreach (CapturedPacketInfo packet in packets)
                                 {
-                                    File.WriteAllBytes(System.IO.Path.Combine(dialog.FileName, currentDate + "-CaptureStream" + packet.StreamID + ".vspcap"), 
-                                                        CustomPacketBuilder.BuildPacket(packet.LocalIP, packet.RemoteIP, packet.LocalPort, packet.Data));
+                                    File.WriteAllBytes(System.IO.Path.Combine(dialog.FileName, currentDate + "-CaptureNo" + count.ToString() + ".vspcap"), 
+                                                        CustomPacketBuilder.BuildPacket(packet.SourceIP, packet.DestIP, 
+                                                                                        packet.SourcePort, packet.DestPort, packet.Data));
+                                    count++;
                                 }
                                 System.Windows.MessageBox.Show($"Packets successfully saved to {dialog.FileName}.", "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
                             }
@@ -271,47 +274,49 @@ namespace VinSeek.Views
         public void LoadPacketInfoFromFile(string filename)
         {
             byte[] fileData = File.ReadAllBytes(filename);
-            byte[] localIPBytes = new byte[16];
-            byte[] remoteIPBytes = new byte[16];
-            byte[] localPortBytes = new byte[6];
-            byte[] data = new byte[fileData.Length - 38];
+            byte[] sourceIPBytes = new byte[15];
+            byte[] destIPBytes = new byte[15];
+            byte[] sourcePortBytes = new byte[5];
+            byte[] destPortBytes = new byte[5];
+            byte[] data = new byte[fileData.Length - 44];
 
-            Array.Copy(fileData, localIPBytes, 15);
-            var localIP = Encoding.ASCII.GetString(localIPBytes);
-            localIP = Regex.Replace(localIP, @"[^\u0020-\u007E]", string.Empty);
+            Array.Copy(fileData, sourceIPBytes, 14);
+            var sourceIP = Encoding.ASCII.GetString(sourceIPBytes);
+            sourceIP = Regex.Replace(sourceIP, @"[^\u0020-\u007E]", string.Empty);
 
-            Array.Copy(fileData, 16, remoteIPBytes, 0, 16);
-            var remoteIP = Encoding.ASCII.GetString(remoteIPBytes);
-            remoteIP = Regex.Replace(remoteIP, @"[^\u0020-\u007E]", string.Empty);
+            Array.Copy(fileData, 16, destIPBytes, 0, 15);
+            var destIP = Encoding.ASCII.GetString(destIPBytes);
+            destIP = Regex.Replace(destIP, @"[^\u0020-\u007E]", string.Empty);
 
-            Array.Copy(fileData, 32, localPortBytes, 0, 6);
-            var localPort = Encoding.ASCII.GetString(localPortBytes);
-            localPort = Regex.Replace(localPort, @"[^\u0020-\u007E]", string.Empty);
+            Array.Copy(fileData, 32, sourcePortBytes, 0, 5);
+            var sourcePort = Encoding.ASCII.GetString(sourcePortBytes);
+            sourcePort = Regex.Replace(sourcePort, @"[^\u0020-\u007E]", string.Empty);
 
-            Array.Copy(fileData, 38, data, 0, fileData.Length - 38);
+            Array.Copy(fileData, 38, destPortBytes, 0, 5);
+            var destPort = Encoding.ASCII.GetString(destPortBytes);
+            sourcePort = Regex.Replace(sourcePort, @"[^\u0020-\u007E]", string.Empty);
 
-            int streamId;
-            int temp = CapturedPacketsInfoList.Count;
+            Array.Copy(fileData, 43, data, 0, fileData.Length - 44);
 
-            if (temp == 0)
-                streamId = 0;
+            string direction;
+
+            if (sourcePort == "27015")
+                direction = "Received";
             else
-                streamId = temp++;
+                direction = "Sent";
 
-            // create new tab for the opened file
             Dispatcher.Invoke((Action)(() =>
             {
                 var pack = new CapturedPacketInfo
                 {
-                    Direction = "Received",
-                    LocalIP = localIP.ToString(),
-                    RemoteIP = remoteIP.ToString(),
-                    LocalPort = localPort,
-                    RemotePort = "27015",
+                    Direction = direction,
+                    SourceIP = sourceIP.ToString(),
+                    DestIP = destIP.ToString(),
+                    SourcePort = sourcePort,
+                    DestPort = destPort,
                     Protocol = IPProtocol.TCP,
                     DataLength = data.Length,
-                    Data = data,
-                    StreamID = streamId
+                    Data = data
                 };
                 // load data into hex box
                 Dispatcher.Invoke(new ThreadStart(()
