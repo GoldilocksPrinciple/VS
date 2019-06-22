@@ -86,7 +86,7 @@
                                     <GridViewColumn Header="Destination Port" Width="180" DisplayMemberBinding="{Binding DestPort}" />
                                     <GridViewColumn Header="Protocol" Width="100" DisplayMemberBinding="{Binding Protocol}" />
                                     <GridViewColumn Header="Data Length" Width="158" DisplayMemberBinding="{Binding DataLength}" />
-                                    <GridViewColumn Header="Note" Width="110" />
+                                    <GridViewColumn Header="Note" Width="110" DisplayMemberBinding="{Binding Note}"/>
                                 </GridView>
                                 <!--<GridView>
                                     <GridViewColumn Header="Opcode" Width="120" />

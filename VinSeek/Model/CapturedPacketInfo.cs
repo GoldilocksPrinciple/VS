@@ -50,6 +50,8 @@ namespace VinSeek.Model
             }
         }
 
+        public string Note { get; set; }
+
         public event PropertyChangedEventHandler PropertyChanged;
         public void OnPropertyChanged(String propertyName)
         {

@@ -113,10 +113,17 @@
     <Compile Include="Views\DeviceListWindow.xaml.cs">
       <DependentUpon>DeviceListWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\EditNoteView.xaml.cs">
+      <DependentUpon>EditNoteView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\VinSeekMainTab.xaml.cs">
       <DependentUpon>VinSeekMainTab.xaml</DependentUpon>
     </Compile>
     <Page Include="Views\DeviceListWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\EditNoteView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

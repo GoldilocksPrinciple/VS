@@ -90,6 +90,8 @@ namespace VinSeek.Utils
                 return;
 
             _packetReceived++;
+            // update number of received packets
+            _currentVinSeekTab.UpdateNumberOfPackets("Received", _packetReceived);
 
             // first packet of first stream
             if (_currentVinSeekTab.CapturedPacketsInfoList.Count == 0)
@@ -98,7 +100,11 @@ namespace VinSeek.Utils
                                         data.Length, data, "Received");
 
                 _currentVinSeekTab.Dispatcher.Invoke(new Action(() => { _currentVinSeekTab.CapturedPacketsInfoList.Add(pack); }));
-                //_currentVinSeekTab.AddPacketToList(pack);
+
+                var stream = new MemoryStream(data);
+                _currentVinSeekTab.Dispatcher.Invoke(new ThreadStart(()
+                                                =>
+                { _currentVinSeekTab.LoadDataFromStream(stream); }));
             }
             else
             {
@@ -132,23 +138,10 @@ namespace VinSeek.Utils
                 }
             }
 
-            var stream = new MemoryStream(data);
-
-            if (_currentVinSeekTab.CapturedPacketsInfoList.Count == 1)
-            {
-                // update view for hexbox of current selected item in packet list view with new data
-                _currentVinSeekTab.Dispatcher.Invoke(new ThreadStart(()
-                                                =>
-                { _currentVinSeekTab.LoadDataFromStream(stream); }));
-            }
-
             // update view for hexbox of current selected item in packet list view with new data
             _currentVinSeekTab.Dispatcher.Invoke(new ThreadStart(()
                                             =>
             { _currentVinSeekTab.UpdateSelectedItemHexBox(_currentVinSeekTab.PacketListView.SelectedIndex); }));
-
-            // update number of received packets
-            _currentVinSeekTab.UpdateNumberOfPackets("Received", _packetReceived);
         }
 
         private void DataSent(string connection, TCPConnection tcpConnection, byte[] data)
@@ -157,6 +150,8 @@ namespace VinSeek.Utils
                 return;
 
             _packetSent++;
+            // update number of sent packets
+            _currentVinSeekTab.UpdateNumberOfPackets("Sent", _packetSent);
 
             // New stream always starts with a packet from server, since all SYN and ACK packets have been filtered out
             // first packet of first stream
@@ -166,7 +161,11 @@ namespace VinSeek.Utils
                                         data.Length, data, "Sent");
 
                 _currentVinSeekTab.Dispatcher.Invoke(new Action(() => { _currentVinSeekTab.CapturedPacketsInfoList.Add(pack); }));
-                //_currentVinSeekTab.AddPacketToList(pack);
+
+                var stream = new MemoryStream(data);
+                _currentVinSeekTab.Dispatcher.Invoke(new ThreadStart(()
+                                                =>
+                { _currentVinSeekTab.LoadDataFromStream(stream); }));
             }
             else
             {
@@ -198,24 +197,11 @@ namespace VinSeek.Utils
                     _currentVinSeekTab.Dispatcher.Invoke(new ThreadStart(() => { _currentVinSeekTab.CapturedPacketsInfoList.Add(pack); }));
                 }
             }
-
-            var stream = new MemoryStream(data);
-
-            if (_currentVinSeekTab.CapturedPacketsInfoList.Count == 1)
-            {
-                // update view for hexbox of current selected item in packet list view with new data
-                _currentVinSeekTab.Dispatcher.Invoke(new ThreadStart(()
-                                                =>
-                { _currentVinSeekTab.LoadDataFromStream(stream); }));
-            }
-
+            
             // update view for hexbox of current selected item in packet list view with new data
             _currentVinSeekTab.Dispatcher.Invoke(new ThreadStart(()
                                             =>
             { _currentVinSeekTab.UpdateSelectedItemHexBox(_currentVinSeekTab.PacketListView.SelectedIndex); }));
-
-            // update number of sent packets
-            _currentVinSeekTab.UpdateNumberOfPackets("Sent", _packetSent);
         }
 
         private CapturedPacketInfo NewCapturedPacketInfo(uint sourceIP, uint destIP, ushort sourcePort, ushort destPort,
