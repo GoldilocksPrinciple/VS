@@ -18,7 +18,6 @@ using System.Threading;
 using System.Windows.Forms;
 using System.Diagnostics;
 using Microsoft.WindowsAPICodePack.Dialogs;
-using WpfHexaEditor;
 using System.IO;
 using SharpPcap.LibPcap;
 using VinSeek.Model;
@@ -37,10 +36,8 @@ namespace VinSeek.Views
     {
         private MainWindow _mainWindow = System.Windows.Application.Current.MainWindow as MainWindow;
         public ObservableCollection<CapturedPacketInfo> CapturedPacketsInfoList;
-        private MemoryStream _selectedDataStream;
         private MachinaPacketCapture _captureWorker;
         private Thread _captureThread;
-        private bool captureStarted;
 
         // SharpPcap variables
         /*private List<CapturedPacketsInfo> _capturedPacketsInfoList;
@@ -61,7 +58,7 @@ namespace VinSeek.Views
 
         public void LoadDataFromFile(string fileName)
         {
-            //HexEditor.FileName = fileName;
+            HexBox.ByteProvider = new DynamicFileByteProvider(fileName);
         }
 
         public void LoadDataFromStream(byte[] data)
@@ -74,8 +71,6 @@ namespace VinSeek.Views
         {
             if (_captureWorker != null)
                 return;
-
-            captureStarted = true;
 
             CapturedPacketsInfoList = new ObservableCollection<CapturedPacketInfo>();
             PacketListView.ItemsSource = CapturedPacketsInfoList;
@@ -185,7 +180,7 @@ namespace VinSeek.Views
         }
         #endregion
 
-        #region Export, Import Packets
+        #region Export, Import, Edit Packets
         private void ExportPacket_Click(object sender, RoutedEventArgs e)
         {
             var packets = PacketListView.SelectedItems;
@@ -269,6 +264,24 @@ namespace VinSeek.Views
             }));
             
             return;
+        }
+
+        private void EditNote_Click(object sender, RoutedEventArgs e)
+        {
+            var index = PacketListView.SelectedIndex;
+
+            if (CapturedPacketsInfoList.Count == 0)
+                return;
+
+            if (index == -1)
+                return;
+
+            Dispatcher.Invoke((Action)(() =>
+            {
+                CapturedPacketsInfoList[index].Note = new EditNoteView(CapturedPacketsInfoList[index].Note,
+                    "Enter text to edit comment/note for this packet. Click OK to save changes.").ShowDialog();
+                Debug.WriteLine(CapturedPacketsInfoList[index].Note);
+            }));
         }
 
         public void LoadPacketInfoFromFile(string filename)

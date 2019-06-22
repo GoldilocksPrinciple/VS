@@ -17,6 +17,7 @@ namespace VinSeek.Model
     {
         private int _dataLength;
         private byte[] _data;
+        private string _note;
         
         public string Direction { get; set; }
         public string SourceIP { get; set; }
@@ -49,8 +50,19 @@ namespace VinSeek.Model
                 }
             }
         }
-
-        public string Note { get; set; }
+        
+        public string Note
+        {
+            get { return _note; }
+            set
+            {
+                if (_note != value)
+                {
+                    _note = value;
+                    OnPropertyChanged("Note");
+                }
+            }
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
         public void OnPropertyChanged(String propertyName)

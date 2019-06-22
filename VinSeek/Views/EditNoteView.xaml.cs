@@ -23,20 +23,19 @@ namespace VinSeek.Views
         {
             InitializeComponent();
         }
-        public EditNoteView(string text, string info, string title)
+        public EditNoteView(string text, string info)
         {
             InitializeComponent();
 
             InfoLabel.Content = info;
             TextEditor.AppendText(text);
-            Title = title;
         }
 
         public new string ShowDialog()
         {
             base.ShowDialog();
 
-            return new TextRange(TextEditor.Document.ContentStart, TextEditor.Document.ContentEnd).Text;
+            return TextEditor.Text;
         }
 
         private void ButtonBase_OnClick(object sender, RoutedEventArgs e)

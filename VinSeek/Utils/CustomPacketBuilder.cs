@@ -16,7 +16,7 @@ namespace VinSeek.Utils
                 byte[] sourceIPBytes = Encoding.ASCII.GetBytes(sourceIP);
                 byte[] destIPBytes = Encoding.ASCII.GetBytes(destIP);
                 byte[] sourcePortBytes = Encoding.ASCII.GetBytes(sourcePort);
-                byte[] destPortBytes = Encoding.ASCII.GetBytes(sourcePort);
+                byte[] destPortBytes = Encoding.ASCII.GetBytes(destPort);
 
                 stream.Write(sourceIPBytes, 0, sourceIPBytes.Length);
 

@@ -102,9 +102,9 @@ namespace VinSeek.Utils
                 _currentVinSeekTab.Dispatcher.Invoke(new Action(() => { _currentVinSeekTab.CapturedPacketsInfoList.Add(pack); }));
 
                 //var stream = new MemoryStream(data);
-                _currentVinSeekTab.Dispatcher.Invoke(new ThreadStart(()
+                /*_currentVinSeekTab.Dispatcher.Invoke(new ThreadStart(()
                                                 =>
-                { _currentVinSeekTab.LoadDataFromStream(data); }));
+                { _currentVinSeekTab.LoadDataFromStream(data); }));*/
             }
             else
             {
@@ -163,9 +163,9 @@ namespace VinSeek.Utils
                 _currentVinSeekTab.Dispatcher.Invoke(new Action(() => { _currentVinSeekTab.CapturedPacketsInfoList.Add(pack); }));
 
                 //var stream = new MemoryStream(data);
-                _currentVinSeekTab.Dispatcher.Invoke(new ThreadStart(()
+                /*_currentVinSeekTab.Dispatcher.Invoke(new ThreadStart(()
                                                 =>
-                { _currentVinSeekTab.LoadDataFromStream(data); }));
+                { _currentVinSeekTab.LoadDataFromStream(data); }));*/
             }
             else
             {

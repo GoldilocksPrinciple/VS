@@ -45,6 +45,7 @@
                                 <ContextMenu>
                                     <MenuItem Header="Export selected stream to file" Click="ExportPacket_Click"/>
                                     <MenuItem Header="Import data to list" Click="ImportPacket_Click" />
+                                    <MenuItem Header="Edit Note" Click="EditNote_Click" />
                                 </ContextMenu>
                             </ListView.ContextMenu>
                             <ListView.Resources>
@@ -81,13 +82,13 @@
                             </ListView.Resources>
                             <ListView.View>
                                 <GridView>
-                                    <GridViewColumn Header="Source IP Address" Width="250" DisplayMemberBinding="{Binding SourceIP}" />
-                                    <GridViewColumn Header="Destination IP Address" Width="250" DisplayMemberBinding="{Binding DestIP}" />
-                                    <GridViewColumn Header="Source Port" Width="180" DisplayMemberBinding="{Binding SourcePort}" />
-                                    <GridViewColumn Header="Destination Port" Width="180" DisplayMemberBinding="{Binding DestPort}" />
-                                    <GridViewColumn Header="Protocol" Width="100" DisplayMemberBinding="{Binding Protocol}" />
+                                    <GridViewColumn Header="Source IP Address" Width="180" DisplayMemberBinding="{Binding SourceIP}" />
+                                    <GridViewColumn Header="Destination IP Address" Width="180" DisplayMemberBinding="{Binding DestIP}" />
+                                    <GridViewColumn Header="Source Port" Width="160" DisplayMemberBinding="{Binding SourcePort}" />
+                                    <GridViewColumn Header="Destination Port" Width="160" DisplayMemberBinding="{Binding DestPort}" />
+                                    <GridViewColumn Header="Protocol" Width="80" DisplayMemberBinding="{Binding Protocol}" />
                                     <GridViewColumn Header="Data Length" Width="158" DisplayMemberBinding="{Binding DataLength}" />
-                                    <GridViewColumn Header="Note" Width="110" DisplayMemberBinding="{Binding Note}"/>
+                                    <GridViewColumn Header="Comment/Note" Width="300" DisplayMemberBinding="{Binding Note}"/>
                                 </GridView>
                                 <!--<GridView>
                                     <GridViewColumn Header="Opcode" Width="120" />
