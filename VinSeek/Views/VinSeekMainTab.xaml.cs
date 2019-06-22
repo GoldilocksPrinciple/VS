@@ -26,6 +26,7 @@ using VinSeek.Utils;
 using System.Collections.ObjectModel;
 using Machina;
 using System.Text.RegularExpressions;
+using Be.Windows.Forms;
 
 namespace VinSeek.Views
 {
@@ -60,12 +61,12 @@ namespace VinSeek.Views
 
         public void LoadDataFromFile(string fileName)
         {
-            HexEditor.FileName = fileName;
+            //HexEditor.FileName = fileName;
         }
 
-        public void LoadDataFromStream(MemoryStream data)
+        public void LoadDataFromStream(byte[] data)
         {
-            HexEditor.Stream = data;
+            HexBox.ByteProvider = new DynamicByteProvider(data);
         }
 
         #region Machina
@@ -144,8 +145,7 @@ namespace VinSeek.Views
                 return;
 
             var data = CapturedPacketsInfoList[index].Data;
-            _selectedDataStream = new MemoryStream(data);
-            LoadDataFromStream(_selectedDataStream);
+            LoadDataFromStream(data);
         }
 
         public void UpdateNumberOfPackets(string direction, int count)
@@ -318,7 +318,7 @@ namespace VinSeek.Views
                     DataLength = data.Length,
                     Data = data
                 };
-                // load data into hex box
+                
                 Dispatcher.Invoke(new ThreadStart(()
                 => { CapturedPacketsInfoList.Add(pack); }));
             }));
