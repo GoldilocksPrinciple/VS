@@ -12,7 +12,7 @@ using System.Net;
 using Machina;
 using System.IO;
 
-namespace VinSeek.Utils
+namespace VinSeek.Network
 {
     public class MachinaPacketCapture
     {
@@ -99,12 +99,10 @@ namespace VinSeek.Utils
                 var pack = NewCapturedPacketInfo(tcpConnection.RemoteIP, tcpConnection.LocalIP, tcpConnection.RemotePort, tcpConnection.LocalPort,
                                         data.Length, data, "Received");
 
-                _currentVinSeekTab.Dispatcher.Invoke(new Action(() => { _currentVinSeekTab.CapturedPacketsInfoList.Add(pack); }));
-
-                //var stream = new MemoryStream(data);
-                /*_currentVinSeekTab.Dispatcher.Invoke(new ThreadStart(()
-                                                =>
-                { _currentVinSeekTab.LoadDataFromStream(data); }));*/
+                _currentVinSeekTab.Dispatcher.Invoke(new Action(() => {
+                    _currentVinSeekTab.CapturedPacketsInfoList.Add(pack);
+                    _currentVinSeekTab.LoadDataFromStream(data);
+                }));
             }
             else
             {
@@ -160,12 +158,10 @@ namespace VinSeek.Utils
                 var pack = NewCapturedPacketInfo(tcpConnection.LocalIP, tcpConnection.RemoteIP, tcpConnection.LocalPort, tcpConnection.RemotePort,
                                         data.Length, data, "Sent");
 
-                _currentVinSeekTab.Dispatcher.Invoke(new Action(() => { _currentVinSeekTab.CapturedPacketsInfoList.Add(pack); }));
-
-                //var stream = new MemoryStream(data);
-                /*_currentVinSeekTab.Dispatcher.Invoke(new ThreadStart(()
-                                                =>
-                { _currentVinSeekTab.LoadDataFromStream(data); }));*/
+                _currentVinSeekTab.Dispatcher.Invoke(new Action(() => {
+                    _currentVinSeekTab.CapturedPacketsInfoList.Add(pack);
+                    _currentVinSeekTab.LoadDataFromStream(data);
+                }));
             }
             else
             {

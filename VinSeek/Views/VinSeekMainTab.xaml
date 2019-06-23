@@ -4,7 +4,6 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
-             xmlns:control="clr-namespace:WpfHexaEditor;assembly=WPFHexaEditor"
              xmlns:forms="clr-namespace:Be.Windows.Forms;assembly=Be.Windows.Forms.HexBox"
              xmlns:local="clr-namespace:VinSeek.Views"
              xmlns:utils="clr-namespace:VinSeek.Utils"
@@ -111,7 +110,6 @@
                             </Grid.RowDefinitions>
 
                             <DockPanel Grid.Row="0" Grid.ColumnSpan="25">
-                                <!--<control:HexEditor x:Name="HexEditor" FontSize="13" />-->
                                 <forms:WpfHexBox x:Name="HexBox" FontSize="13" />
                             </DockPanel>
                         </Grid>
