@@ -1,25 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using System.Diagnostics;
 using System.IO;
 using VinSeek.Model;
 using VinSeek.Utils;
-using Machina;
-using System.Threading;
-using System.Text.RegularExpressions;
 
 namespace VinSeek.Views
 {
@@ -33,8 +20,10 @@ namespace VinSeek.Views
         {
             InitializeComponent();
 
+            // register custom file extension
             FileAssociationManager.SetAssociation(".vspcap", "VinSeek", FileAssociationManager.AssemmblyExecutablePath(), "VinSeek Packet Capture File");
 
+            // open by double click on packet file
             if (App.fileName != null)
             {
                 var item = new TabItem();
@@ -121,14 +110,20 @@ namespace VinSeek.Views
         private void CloseTabCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Debug.WriteLine("Close Tab.");
-            Dispatcher.Invoke((Action)(() =>
-            {
-                MainTabControl.Items.Remove(MainTabControl.SelectedIndex);
-            }));
+
+            if (MainTabControl.Items.Count == 0)
+                return;
+
+            MainTabControl.Items.RemoveAt(MainTabControl.SelectedIndex);
         }
         private void CloseAllTabCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Debug.WriteLine("Close All Tab.");
+
+            if (MainTabControl.Items.Count == 0)
+                return;
+
+            MainTabControl.Items.Clear();
         }
         private void ExitApplicationCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
@@ -138,10 +133,20 @@ namespace VinSeek.Views
         private void StartCaptureCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Debug.WriteLine("Start Capture.");
+
+            if (MainTabControl.Items.Count == 0)
+            {
+                System.Windows.MessageBox.Show("No tab detected. Please create new tab before starting capture.", "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                return;
+            }
+
             ((VinSeekMainTab)item.Content).StartCapturePackets();
         }
         private void StopCaptureCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
+            if (MainTabControl.Items.Count == 0)
+                return;
+
             if (StartCaptureMenuItem.IsEnabled)
                 return;
 
@@ -160,6 +165,12 @@ namespace VinSeek.Views
         private void RunScriptCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Debug.WriteLine("Run Script.");
+
+            if (MainTabControl.Items.Count == 0)
+            {
+                System.Windows.MessageBox.Show("No tab detected. Please create new tab before running script.", "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                return;
+            }
         }
         private void OpenTemplateCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
@@ -172,10 +183,21 @@ namespace VinSeek.Views
         private void RunTemplateCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Debug.WriteLine("Run Template.");
+
+            if (MainTabControl.Items.Count == 0)
+            {
+                System.Windows.MessageBox.Show("No tab detected. Please create new tab before running template.", "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                return;
+            }
         }
         private void TabCloseClick(object sender, RoutedEventArgs e)
         {
             Debug.WriteLine("Close Tab.");
+
+            if (MainTabControl.Items.Count == 0)
+                return;
+
+            MainTabControl.Items.RemoveAt(MainTabControl.SelectedIndex);
         }
         #endregion
 

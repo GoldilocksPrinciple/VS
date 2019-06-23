@@ -1,17 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using SharpPcap;
 using PacketDotNet;
 using System.Threading;
@@ -22,9 +11,9 @@ using System.IO;
 using SharpPcap.LibPcap;
 using VinSeek.Model;
 using VinSeek.Utils;
+using VinSeek.Network;
 using System.Collections.ObjectModel;
 using Machina;
-using System.Text.RegularExpressions;
 using Be.Windows.Forms;
 
 namespace VinSeek.Views
@@ -109,19 +98,6 @@ namespace VinSeek.Views
 
         }
 
-        public void AddPacketToList(CapturedPacketInfo packetInfo)
-        {
-            CapturedPacketsInfoList.Add(packetInfo);
-
-            Dispatcher.Invoke((Action)(() =>
-            {
-                PacketListView.Items.Add(packetInfo);
-
-                // auto scroll to the end of the list when new item is added
-                //PacketListView.ScrollIntoView(packetInfo);
-            }));
-        }
-
         public void PacketListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             Dispatcher.Invoke((Action)(() =>
@@ -131,7 +107,7 @@ namespace VinSeek.Views
 
                 UpdateSelectedItemHexBox(PacketListView.SelectedIndex);
             }));
-            
+
         }
 
         public void UpdateSelectedItemHexBox(int index)
@@ -224,8 +200,8 @@ namespace VinSeek.Views
                                 int count = 0;
                                 foreach (CapturedPacketInfo packet in packets)
                                 {
-                                    File.WriteAllBytes(System.IO.Path.Combine(dialog.FileName, currentDate + "-CaptureNo" + count.ToString() + ".vspcap"), 
-                                                        CustomPacketBuilder.BuildPacket(packet.SourceIP, packet.DestIP, 
+                                    File.WriteAllBytes(System.IO.Path.Combine(dialog.FileName, currentDate + "-CaptureNo" + count.ToString() + ".vspcap"),
+                                                        CustomPacketBuilder.BuildPacket(packet.SourceIP, packet.DestIP,
                                                                                         packet.SourcePort, packet.DestPort, packet.Data));
                                     count++;
                                 }
@@ -251,7 +227,7 @@ namespace VinSeek.Views
                         {
                             if (System.IO.Path.GetExtension(dialog.FileName) != ".vspcap") // if not file that can extract info -> only get the data dump
                             {
-                                System.Windows.MessageBox.Show($"Error importing! {dialog.FileName} is not a VinSeek Packet Capture File. Please use open file function instead", 
+                                System.Windows.MessageBox.Show($"Error importing! {dialog.FileName} is not a VinSeek Packet Capture File. Please use open file function instead",
                                     "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
                             }
                             else
@@ -262,7 +238,7 @@ namespace VinSeek.Views
                     }
                 }
             }));
-            
+
             return;
         }
 
@@ -280,61 +256,14 @@ namespace VinSeek.Views
             {
                 CapturedPacketsInfoList[index].Note = new EditNoteView(CapturedPacketsInfoList[index].Note,
                     "Enter text to edit comment/note for this packet. Click OK to save changes.").ShowDialog();
-                Debug.WriteLine(CapturedPacketsInfoList[index].Note);
             }));
         }
 
         public void LoadPacketInfoFromFile(string filename)
         {
             byte[] fileData = File.ReadAllBytes(filename);
-            byte[] sourceIPBytes = new byte[15];
-            byte[] destIPBytes = new byte[15];
-            byte[] sourcePortBytes = new byte[5];
-            byte[] destPortBytes = new byte[5];
-            byte[] data = new byte[fileData.Length - 44];
-
-            Array.Copy(fileData, sourceIPBytes, 14);
-            var sourceIP = Encoding.ASCII.GetString(sourceIPBytes);
-            sourceIP = Regex.Replace(sourceIP, @"[^\u0020-\u007E]", string.Empty);
-
-            Array.Copy(fileData, 16, destIPBytes, 0, 15);
-            var destIP = Encoding.ASCII.GetString(destIPBytes);
-            destIP = Regex.Replace(destIP, @"[^\u0020-\u007E]", string.Empty);
-
-            Array.Copy(fileData, 32, sourcePortBytes, 0, 5);
-            var sourcePort = Encoding.ASCII.GetString(sourcePortBytes);
-            sourcePort = Regex.Replace(sourcePort, @"[^\u0020-\u007E]", string.Empty);
-
-            Array.Copy(fileData, 38, destPortBytes, 0, 5);
-            var destPort = Encoding.ASCII.GetString(destPortBytes);
-            sourcePort = Regex.Replace(sourcePort, @"[^\u0020-\u007E]", string.Empty);
-
-            Array.Copy(fileData, 43, data, 0, fileData.Length - 44);
-
-            string direction;
-
-            if (sourcePort == "27015")
-                direction = "Received";
-            else
-                direction = "Sent";
-
-            Dispatcher.Invoke((Action)(() =>
-            {
-                var pack = new CapturedPacketInfo
-                {
-                    Direction = direction,
-                    SourceIP = sourceIP.ToString(),
-                    DestIP = destIP.ToString(),
-                    SourcePort = sourcePort,
-                    DestPort = destPort,
-                    Protocol = IPProtocol.TCP,
-                    DataLength = data.Length,
-                    Data = data
-                };
-                
-                Dispatcher.Invoke(new ThreadStart(()
-                => { CapturedPacketsInfoList.Add(pack); }));
-            }));
+            var pack = CustomPacketBuilder.ReadPacket(fileData);
+            Dispatcher.Invoke(new ThreadStart(() => { CapturedPacketsInfoList.Add(pack); }));
         }
         #endregion
 
