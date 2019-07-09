@@ -103,6 +103,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Model\CapturedPacketInfo.cs" />
+    <Compile Include="Network\Packet.cs" />
     <Compile Include="Utils\CustomPacketBuilder.cs" />
     <Compile Include="Utils\FileAssociationManager.cs" />
     <Compile Include="Network\MachinaPacketCapture.cs" />
