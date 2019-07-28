@@ -99,6 +99,11 @@
     <Compile Include="Utilities\PacketFilter.cs" />
     <Compile Include="Utilities\ShortcutCommands.cs" />
     <Compile Include="Utilities\Util.cs" />
+    <Compile Include="Model\CapturedPacketInfo.cs" />
+    <Compile Include="Utils\CustomPacketBuilder.cs" />
+    <Compile Include="Utils\FileAssociationManager.cs" />
+    <Compile Include="Utils\PacketFilter.cs" />
+    <Compile Include="Utils\ShortcutCommands.cs" />
     <Compile Include="Views\EditNoteView.xaml.cs">
       <DependentUpon>EditNoteView.xaml</DependentUpon>
     </Compile>
