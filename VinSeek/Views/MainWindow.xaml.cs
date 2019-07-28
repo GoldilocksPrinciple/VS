@@ -6,7 +6,9 @@ using Microsoft.WindowsAPICodePack.Dialogs;
 using System.Diagnostics;
 using System.IO;
 using VinSeek.Model;
-using VinSeek.Utils;
+using VinSeek.Utilities;
+using System.Windows.Interop;
+using System.Runtime.InteropServices;
 
 namespace VinSeek.Views
 {
@@ -16,6 +18,8 @@ namespace VinSeek.Views
     public partial class MainWindow : Window
     {
         private TabItem item;
+        public HwndSource PacketSource;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -46,6 +50,12 @@ namespace VinSeek.Views
             }
         }
 
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            base.OnSourceInitialized(e);
+            this.PacketSource = PresentationSource.FromVisual(this) as HwndSource;
+        }
+        
         public void OpenFile()
         {
             // file picker dialog
@@ -94,11 +104,13 @@ namespace VinSeek.Views
                 item.Focus();
             }));
         }
+        
         private void OpenFileCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Debug.WriteLine("Open File.");
             OpenFile();
         }
+        
         private void SaveFileCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Debug.WriteLine("Save File.");
@@ -152,7 +164,6 @@ namespace VinSeek.Views
 
             Debug.WriteLine("Stop Capture.");
             ((VinSeekMainTab)item.Content).StopCapturePackets();
-
         }
         private void OpenScriptCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
@@ -199,12 +210,12 @@ namespace VinSeek.Views
 
             MainTabControl.Items.RemoveAt(MainTabControl.SelectedIndex);
         }
-        #endregion
-
+        
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
             e.Cancel = true;
             Environment.Exit(0);
         }
+        #endregion
     }
 }

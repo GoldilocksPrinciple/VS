@@ -5,9 +5,6 @@ A Vindictus Packet Logger/Network Analysis Tool
 
 **References:**
 - Custom version of Be.HexBox with HexBox for WPF
-- [Custom version of Machina](https://github.com/Henrimn/machina)
-Original: https://github.com/ravahn/machina
 
 **IMPORTANT:**
-- WinPcap driver for capturing function: https://www.winpcap.org/install/
-- Make sure to add the tool to Firewall exclusion.
+- [Ekinar](https://github.com/Henrimn/Ekinar) is needed for VinSeek to log packets.

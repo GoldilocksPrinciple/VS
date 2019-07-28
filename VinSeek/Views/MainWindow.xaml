@@ -5,9 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:VinSeek"
         xmlns:views="clr-namespace:VinSeek.Views"
-        xmlns:utils="clr-namespace:VinSeek.Utils"
+        xmlns:utils="clr-namespace:VinSeek.Utilities"
         mc:Ignorable="d"
-        Title="VinSeek" Height="900" Width="1600">
+        Title="VinSeek" Height="960" Width="1280" Loaded="Window_Loaded">
     <Window.Resources>
         <DataTemplate DataType="{x:Type views:VinSeekMainTab}">
             <views:VinSeekMainTab/>

@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
-using SharpPcap;
-using PacketDotNet;
 using System.Threading;
 using System.Windows.Forms;
 using System.Diagnostics;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using System.IO;
-using SharpPcap.LibPcap;
 using VinSeek.Model;
-using VinSeek.Utils;
-using VinSeek.Network;
+using VinSeek.Utilities;
 using System.Collections.ObjectModel;
-using Machina;
 using Be.Windows.Forms;
+using System.Runtime.InteropServices;
+using System.Net;
+using System.Reflection;
+using System.Windows.Interop;
 
 namespace VinSeek.Views
 {
@@ -24,25 +23,14 @@ namespace VinSeek.Views
     public partial class VinSeekMainTab : System.Windows.Controls.UserControl
     {
         private MainWindow _mainWindow = System.Windows.Application.Current.MainWindow as MainWindow;
-        public ObservableCollection<CapturedPacketInfo> CapturedPacketsInfoList;
-        private MachinaPacketCapture _captureWorker;
-        private Thread _captureThread;
-
-        // SharpPcap variables
-        /*private List<CapturedPacketsInfo> _capturedPacketsInfoList;
-        public bool captureStarted = false;
-        private DeviceListWindow _deviceListWindow;
-        private ICaptureDevice _device;
-        private bool _backgroundThreadStop = false;*/
-
-        //public ObservableCollection<CapturedPacketInfo> CapturedPacketsList { get; set; }
+        public ObservableCollection<VindictusPacket> PacketList;
 
         public VinSeekMainTab()
         {
             InitializeComponent();
 
-            CapturedPacketsInfoList = new ObservableCollection<CapturedPacketInfo>();
-            PacketListView.ItemsSource = CapturedPacketsInfoList;
+            PacketList = new ObservableCollection<VindictusPacket>();
+            PacketListView.ItemsSource = PacketList;
         }
 
         public void LoadDataFromFile(string fileName)
@@ -58,41 +46,38 @@ namespace VinSeek.Views
         #region Machina
         public void StartCapturePackets()
         {
-            if (_captureWorker != null)
-                return;
+            PacketList = new ObservableCollection<VindictusPacket>();
+            PacketListView.ItemsSource = PacketList;
 
-            CapturedPacketsInfoList = new ObservableCollection<CapturedPacketInfo>();
-            PacketListView.ItemsSource = CapturedPacketsInfoList;
+            Process[] ekinarProcess = Process.GetProcessesByName("Ekinar");
 
-            _captureWorker = new MachinaPacketCapture(this);
-            _captureThread = new Thread(_captureWorker.Start);
-            _captureThread.Start();
-
-            Dispatcher.Invoke((Action)(() =>
+            if (ekinarProcess.Length < 0) 
             {
-                _mainWindow.StartCaptureMenuItem.IsEnabled = false;
-            }));
+                Dispatcher.Invoke((Action)(() =>
+                {
+                    CaptureStatusInfo.Text = "Ekinar is not running...";
+                    _mainWindow.StartCaptureMenuItem.IsEnabled = false;
+                }));
+            }
+            else
+            {
+                _mainWindow.PacketSource.AddHook(WndProc);
+
+                Dispatcher.Invoke((Action)(() =>
+                {
+                    CaptureStatusInfo.Text = "Capturing data from Ekinar";
+                    _mainWindow.StartCaptureMenuItem.IsEnabled = false;
+                }));
+            }
         }
 
         public void StopCapturePackets()
         {
-            if (_captureWorker == null)
-                return;
-            if (!_captureWorker.foundProcessId)
-            {
-                _captureWorker.Stop();
-
-            }
-            else
-            {
-                _captureWorker.Stop();
-                _captureThread.Join();
-            }
-
-            _captureWorker = null;
+            _mainWindow.PacketSource.RemoveHook(WndProc);
 
             Dispatcher.Invoke((Action)(() =>
             {
+                CaptureStatusInfo.Text = "Stop capturing data";
                 _mainWindow.StartCaptureMenuItem.IsEnabled = true;
             }));
 
@@ -102,7 +87,7 @@ namespace VinSeek.Views
         {
             Dispatcher.Invoke((Action)(() =>
             {
-                if (CapturedPacketsInfoList.Count == 0)
+                if (PacketList.Count == 0)
                     return;
 
                 UpdateSelectedItemHexBox(PacketListView.SelectedIndex);
@@ -115,50 +100,15 @@ namespace VinSeek.Views
             if (index == -1)
                 return;
 
-            var data = CapturedPacketsInfoList[index].Data;
+            var data = PacketList[index].Body;
             LoadDataFromStream(data);
-        }
-
-        public void UpdateNumberOfPackets(string direction, int count)
-        {
-            if (direction == "Init")
-            {
-                Dispatcher.Invoke((Action)(() =>
-                {
-                    PacketSentText.Text = "Client: " + count.ToString();
-                    PacketReceivedText.Text = "Server: " + count.ToString();
-                }));
-            }
-            else if (direction == "Sent")
-            {
-                Dispatcher.Invoke((Action)(() =>
-                {
-                    PacketSentText.Text = "Client: " + count.ToString();
-                }));
-            }
-            else if (direction == "Received")
-            {
-                Dispatcher.Invoke((Action)(() =>
-                {
-                    PacketReceivedText.Text = "Server: " + count.ToString();
-                }));
-            }
-            else
-                return;
-        }
-
-        public void UpdateCaptureProcessInfo(string text)
-        {
-            Dispatcher.Invoke((Action)(() =>
-            {
-                ProcessInfoText.Text = text;
-            }));
         }
         #endregion
 
         #region Export, Import, Edit Packets
         private void ExportPacket_Click(object sender, RoutedEventArgs e)
         {
+            /*
             var packets = PacketListView.SelectedItems;
 
             if (packets.Count == 0)
@@ -210,11 +160,12 @@ namespace VinSeek.Views
                         }));
                     }
                 }
-            }
+            }*/
         }
 
         private void ImportPacket_Click(object sender, RoutedEventArgs e)
         {
+            /*
             Dispatcher.Invoke((Action)(() =>
             {
                 using (CommonOpenFileDialog dialog = new CommonOpenFileDialog { IsFolderPicker = false })
@@ -239,14 +190,14 @@ namespace VinSeek.Views
                 }
             }));
 
-            return;
+            return;*/
         }
 
         private void EditNote_Click(object sender, RoutedEventArgs e)
         {
             var index = PacketListView.SelectedIndex;
 
-            if (CapturedPacketsInfoList.Count == 0)
+            if (PacketList.Count == 0)
                 return;
 
             if (index == -1)
@@ -254,156 +205,40 @@ namespace VinSeek.Views
 
             Dispatcher.Invoke((Action)(() =>
             {
-                CapturedPacketsInfoList[index].Note = new EditNoteView(CapturedPacketsInfoList[index].Note,
+                PacketList[index].Note = new EditNoteView(PacketList[index].Note,
                     "Enter text to edit comment/note for this packet. Click OK to save changes.").ShowDialog();
             }));
         }
 
+        
         public void LoadPacketInfoFromFile(string filename)
         {
+            /*
             byte[] fileData = File.ReadAllBytes(filename);
             var pack = CustomPacketBuilder.ReadPacket(fileData);
-            Dispatcher.Invoke(new ThreadStart(() => { CapturedPacketsInfoList.Add(pack); }));
+            Dispatcher.Invoke(new ThreadStart(() => { PacketList.Add(pack); }));
+            IntPtr intPtr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(byte)) * pack.DataLength);
+            Marshal.Copy(pack.Data, 0, intPtr, Marshal.SizeOf(typeof(byte)) * pack.DataLength);
+            
+            Marshal.FreeHGlobal(intPtr);*/
         }
         #endregion
 
-        #region SharpPcap
-        /*
-        public void StartCapturePackets()
+        #region Ekinar interops
+        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
-            _deviceListWindow = new DeviceListWindow();
-            _deviceListWindow.Show();
-            _deviceListWindow.OnItemSelected += DeviceListWindow_OnItemSelected;
-            _deviceListWindow.OnCancel += DeviceListWindow_OnCancel;
-        }
-
-        private void DeviceListWindow_OnCancel()
-        {
-            Environment.Exit(0);
-        }
-
-        private async void DeviceListWindow_OnItemSelected(int itemIndex)
-        {
-            _deviceListWindow.Hide();
-            new Thread(delegate ()
+            if (msg == 0x004A)
             {
-                StartCapture(itemIndex);
-            }).Start();
-            await Task.Run(() => StartCapture(itemIndex));
-        }
-
-        private void StartCapture(int itemIndex) //TODO: Figure out why new capture didn't start after stopping the previous capture
-        {
-            Dispatcher.Invoke((Action)(() =>
-            {
-                _mainWindow.StartCaptureMenuItem.IsEnabled = false;
-                PacketListView.ItemsSource = null;
-            }));
-
-            _capturedPacketsInfoList = new List<CapturedPacketsInfo>();
-            _device = CaptureDeviceList.Instance[itemIndex];
-
-            // Open the device for capturing
-            int readTimeoutMilliseconds = 0;
-            _device.Open(DeviceMode.Promiscuous, readTimeoutMilliseconds);
-            _device.Filter = "tcp port 27015"; // Vindictus port
-
-            RawCapture rawCapture;
-
-            int packetSent = 0;
-            int packetReceived = 0;
-
-            // Capture packets using GetNextPacket()
-            while ((rawCapture = _device.GetNextPacket()) != null)
-            {
-                if (_backgroundThreadStop)
-                {
-                    _device.Close();
-                    break;
-                }
-
-                var pack = PacketDotNet.Packet.ParsePacket(rawCapture.LinkLayerType, rawCapture.Data);
-                var tcp = (TcpPacket)pack.Extract(typeof(TcpPacket));
-                if (tcp != null)
-                {
-                    IPPacket iPPacket = (IPPacket)tcp.ParentPacket;
-
-                    // read packet information
-                    string direction;
-                    var sourceIP = iPPacket.SourceAddress.ToString();
-                    var destIP = iPPacket.DestinationAddress.ToString();
-                    var sourcePort = tcp.SourcePort.ToString();
-                    var destPort = tcp.DestinationPort.ToString();
-                    var protocol = iPPacket.Protocol.ToString();
-                    var len = rawCapture.Data.Length.ToString();
-                    var data = pack.PayloadPacket.PayloadPacket.PayloadData;
-
-                    if (sourcePort == "27015")
-                    {
-                        direction = "Received";
-                        packetReceived++;
-                    }
-                    else
-                    {
-                        direction = "Sent";
-                        packetSent++;
-                    }
-
-                    UpdateNumberOfPackets("Sent", packetSent);
-                    UpdateNumberOfPackets("Received", packetReceived);
-
-                    Debug.WriteLine(rawCapture.Data.Length.GetType());
-
-                    var packet = new CapturedPacketsInfo() { Direction = direction, SourceIP = sourceIP, DestIP = destIP, SourcePort = sourcePort, DestPort = destPort, Protocol = protocol, Length = len, Data = data };
-                    _capturedPacketsInfoList.Add(packet);
-                    // update PacketListView
-                    Dispatcher.Invoke((Action)(() =>
-                    {
-                        PacketListView.Items.Add(packet);
-                    }));
-                }
+                string timestamp = DateTime.Now.ToString("hh:mm:ss.fff");
+                byte[] buffer = new Byte[Marshal.ReadInt32(lParam, IntPtr.Size)];
+                IntPtr dataPtr = Marshal.ReadIntPtr(lParam, IntPtr.Size * 2);
+                Marshal.Copy(dataPtr, buffer, 0, buffer.Length);
+                var packet = new VindictusPacket(buffer, timestamp);
+                PacketList.Add(packet);
             }
+            handled = false;
+            return IntPtr.Zero;
         }
-
-        public void StopCapturePackets()
-        {
-            Dispatcher.Invoke((Action)(() =>
-            {
-                _mainWindow.StartCaptureMenuItem.IsEnabled = true;
-            }));
-            _backgroundThreadStop = true;
-        }
-        
-        public class CapturedPacketsInfo
-        {
-            public string Direction { get; set; }
-            public string SourceIP { get; set; }
-            public string DestIP { get; set; }
-            public string SourcePort { get; set; }
-            public string DestPort { get; set; }
-            public string Protocol { get; set; }
-            public string Length { get; set; }
-            public byte[] Data { get; set; }
-
-        }
-        
-        private void PacketListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (PacketListView.SelectedIndex == -1)
-                return;
-
-            if (_capturedPacketsInfoList.Count == 0)
-                return;
-
-            var data = _capturedPacketsInfoList[PacketListView.SelectedIndex].Data;
-
-            _selectedDataStream = new MemoryStream(data);
-
-            Dispatcher.Invoke((Action)(() =>
-            {
-                LoadDataFromStream(_selectedDataStream);
-            }));
-        }*/
         #endregion
     }
 }

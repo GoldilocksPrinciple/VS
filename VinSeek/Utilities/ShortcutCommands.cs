@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace VinSeek.Utils
+namespace VinSeek.Utilities
 {
     public static class ShortcutCommands
     {

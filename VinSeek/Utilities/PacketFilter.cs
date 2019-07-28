@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace VinSeek.Utils
+namespace VinSeek.Utilities
 {
     public class PacketFilter
     {
