@@ -18,6 +18,7 @@ A Vindictus Packet Logger/Network Analysis Tool
 3. Custom TreeListView control for WPF
 
 ## TO-DO LIST:
+- Display debug console under hexbox (mostly for displaying error from parsing template).
 - Automatically find corresponding template file (in a directory) based on packet's name and auto parsing.
 - Automatically parse all templates on 1 selected packet and calculate match %.
 - Save/Read all logged packet in/from 1 file.
