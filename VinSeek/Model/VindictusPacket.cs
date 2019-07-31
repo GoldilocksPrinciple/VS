@@ -73,16 +73,21 @@ namespace VinSeek.Model
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public VindictusPacket(byte[] buffer, string time)
+        public VindictusPacket(byte[] buffer, string time, bool flag)
         {
-            var d = new byte[1];
-            System.Buffer.BlockCopy(buffer, 0, d, 0, 1);
-            this.Direction = System.Text.Encoding.ASCII.GetString(d);
-            Debug.WriteLine(Direction);
+            if (flag)
+            {
+                var d = new byte[1];
+                System.Buffer.BlockCopy(buffer, 0, d, 0, 1);
+                this.Direction = System.Text.Encoding.ASCII.GetString(d);
 
-            var packBuffer = new byte[buffer.Length - 1];
-            System.Buffer.BlockCopy(buffer, 1, packBuffer, 0, buffer.Length - 1);
-            this.Buffer = packBuffer;
+                var packBuffer = new byte[buffer.Length - 1];
+                System.Buffer.BlockCopy(buffer, 1, packBuffer, 0, buffer.Length - 1);
+                this.Buffer = packBuffer;
+            }
+            else
+                this.Buffer = buffer;
+
             this.Time = time;
             this.OpcodeBytesCount = Util.GetBytesCount(Buffer, 8);
             this.Opcode = Util.GetInt32(Buffer, 8);
@@ -90,31 +95,19 @@ namespace VinSeek.Model
             this.Length = Util.GetInt32(Buffer, LengthBytesCount);
             this.PacketOffset = 8 + OpcodeBytesCount + LengthBytesCount;
             this.PacketName = "UNKNOWN";
-            foreach (var clientOpcode in Enum.GetValues(typeof(ClientOpcode)))
+            foreach (var knownOpcode in Enum.GetValues(typeof(KnownOpcodes)))
             {
-                if (Opcode == (int)clientOpcode)
+                if (Opcode == (int)knownOpcode)
                 {
-                    var pName = (ClientOpcode)clientOpcode;
+                    var pName = (KnownOpcodes)knownOpcode;
                     this.PacketName = pName.ToString();
                     break;
-                }
-            }
-            if (this.PacketName == "UNKNOWN")
-            {
-                foreach (var serverOpcode in Enum.GetValues(typeof(ServerOpcode)))
-                {
-                    if (Opcode == (int)serverOpcode)
-                    {
-                        var pName = (ServerOpcode)serverOpcode;
-                        this.PacketName = pName.ToString();
-                        break;
-                    }
                 }
             }
         }
 
         #region Opcodes
-        enum ClientOpcode
+        enum KnownOpcodes
         {
             CM_CHAR_NAME_CHECK = 456,
             CM_ENTER_TOWN = 464,
@@ -125,10 +118,6 @@ namespace VinSeek.Model
             CM_CREATE_CHARACTER = 663,
             CM_REQUEST_CHAR_INFO = 716,
             CM_SET_PIN = 766,
-        }
-
-        enum ServerOpcode
-        {
             SM_REQUEST_PIN = 420,
             SM_CASH_SHOP_CASH = 436,
             SM_CASH_SHOP_PRODUCTS = 440,
@@ -136,7 +125,7 @@ namespace VinSeek.Model
             SM_GAME_ENV = 522,
             SM_HAS_PIN = 594,
             SM_CHARACTER_OUTFIT = 627,
-            SM_CHARACTER_LIST = 660,
+            SM_CHARACTER_LIST = 661,
             SM_LOGIN_SUCCESS = 664,
             SM_CHARACTER_MAILBOX = 681,
             SM_NPC_LOCATIONS = 693,

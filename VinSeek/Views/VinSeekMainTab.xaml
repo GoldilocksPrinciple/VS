@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              xmlns:forms="clr-namespace:Be.Windows.Forms;assembly=Be.Windows.Forms.HexBox"
+             xmlns:tree="clr-namespace:Aga.Controls.Tree;assembly=Aga.Controls"
              xmlns:local="clr-namespace:VinSeek.Views"
              xmlns:utils="clr-namespace:VinSeek.Utilities"
              mc:Ignorable="d" 
@@ -40,8 +41,9 @@
                         <ListView x:Name="PacketListView" Margin="0,20,0,0" Grid.ColumnSpan="2" SelectionChanged="PacketListView_SelectionChanged">
                             <ListView.ContextMenu>
                                 <ContextMenu>
-                                    <MenuItem Header="Export selected stream to file" Click="ExportPacket_Click"/>
-                                    <MenuItem Header="Import data to list" Click="ImportPacket_Click" />
+                                    <MenuItem Header="Run a template on this packet" Click="RunTemplate_Click" />
+                                    <MenuItem Header="Export this packet to file" Click="ExportPacket_Click"/>
+                                    <MenuItem Header="Import packet to list" Click="ImportPacket_Click" />
                                     <MenuItem Header="Edit Note" Click="EditNote_Click" />
                                 </ContextMenu>
                             </ListView.ContextMenu>
@@ -66,7 +68,7 @@
                                             <Setter Property="Background"
                                                     Value="#FFB7E3FF" />
                                         </MultiDataTrigger>
-                                        
+
                                         <MultiTrigger>
                                             <MultiTrigger.Conditions>
                                                 <Condition Property="IsSelected" Value="true" />
@@ -112,7 +114,28 @@
                         </Grid>
                     </Grid>
                     <GridSplitter Grid.Column="1" Grid.RowSpan="2"  Width="5" HorizontalAlignment="Stretch" />
-                    <ListView Grid.Column="2" DockPanel.Dock="Top" x:Name="StructListView" Margin="0,0,0,0">
+                    <tree:TreeList Name="ParseResultTree" Grid.Column="2" >
+                        <tree:TreeList.View>
+                            <GridView>
+                                <GridView.Columns>
+                                    <GridViewColumn Width="150" Header="Name">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <tree:RowExpander/>
+                                                    <!--<Image Source="{Binding Converter={StaticResource RegImageConverter}}"  Margin="0, 0, 5, 0"/>-->
+                                                    <TextBlock Text="{Binding Name}"></TextBlock>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="Type" Width="60" DisplayMemberBinding="{Binding TypeName}"/>
+                                    <GridViewColumn Header="Data" Width="180" DisplayMemberBinding="{Binding Value}"/>
+                                </GridView.Columns>
+                            </GridView>
+                        </tree:TreeList.View>
+                    </tree:TreeList>
+                    <!--<ListView Grid.Column="2" DockPanel.Dock="Top" x:Name="StructListView" Margin="0,0,0,0">
                         <ListView.Resources>
                             <Style TargetType="{x:Type ListViewItem}">
                                 <Style.Triggers>
@@ -128,14 +151,15 @@
                                 <MenuItem x:Name="CopyDataTypeValue" Header="Copy All Cols (Ctrl+Shift+C)" ></MenuItem>
                             </ContextMenu>
                         </ListView.ContextMenu>
-                        <ListView.View>
+                       <ListView.View>
                             <GridView>
                                 <GridViewColumn Header="Datatype" Width="100"/>
                                 <GridViewColumn Header="Name" Width="180" />
                                 <GridViewColumn Header="Value" Width="120"/>
                             </GridView>
                         </ListView.View>
-                    </ListView>
+                    </ListView>-->
+
                 </Grid>
             </DockPanel>
         </DockPanel>

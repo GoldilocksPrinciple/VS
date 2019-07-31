@@ -14,6 +14,8 @@ using System.Runtime.InteropServices;
 using System.Net;
 using System.Reflection;
 using System.Windows.Interop;
+using BeeSchema;
+using System.Collections.Generic;
 
 namespace VinSeek.Views
 {
@@ -95,12 +97,46 @@ namespace VinSeek.Views
 
         }
 
+        public void SchemaParser(string schemaPath, VindictusPacket packet)
+        {
+            var schema = Schema.FromFile(schemaPath);
+            var result = schema.Parse(packet.Buffer);
+            var model = ResultModel.CreateModel(this, result);
+            Dispatcher.Invoke((Action)(() =>
+            {
+                ParseResultTree.Model = model;
+            }));
+        }
+
+        private void RunTemplate_Click(object sender, RoutedEventArgs e)
+        {
+            var packets = PacketListView.SelectedItems;
+
+            if (packets.Count == 0)
+                return;
+
+            if (packets.Count > 1)
+                return;
+            
+            var packet = (VindictusPacket)PacketListView.Items[PacketListView.SelectedIndex];
+
+            using (CommonOpenFileDialog dialog = new CommonOpenFileDialog { IsFolderPicker = false })
+            {
+                dialog.Title = "Select a file to open";
+                // do nothing if no file is selected
+                if ((dialog.ShowDialog() == CommonFileDialogResult.Ok ? dialog.FileName : null) != null)
+                {
+                    this.SchemaParser(dialog.FileName, packet);
+                }
+            }
+        }
+
         public void UpdateSelectedItemHexBox(int index)
         {
             if (index == -1)
                 return;
 
-            var data = PacketList[index].Body;
+            var data = PacketList[index].Buffer;
             LoadDataFromStream(data);
         }
         #endregion
@@ -108,7 +144,6 @@ namespace VinSeek.Views
         #region Export, Import, Edit Packets
         private void ExportPacket_Click(object sender, RoutedEventArgs e)
         {
-            /*
             var packets = PacketListView.SelectedItems;
 
             if (packets.Count == 0)
@@ -118,20 +153,19 @@ namespace VinSeek.Views
             {
                 if (packets.Count == 1)
                 {
-                    var packet = (CapturedPacketInfo)PacketListView.Items[PacketListView.SelectedIndex];
+                    var packet = (VindictusPacket)PacketListView.Items[PacketListView.SelectedIndex];
 
                     CommonSaveFileDialog exportDiag = new CommonSaveFileDialog();
                     exportDiag.AlwaysAppendDefaultExtension = true;
-                    exportDiag.DefaultExtension = ".vspcap";
+                    exportDiag.DefaultExtension = ".bin";
                     exportDiag.DefaultFileName = "MyCapture";
-                    exportDiag.Filters.Add(new CommonFileDialogFilter("VinSeek Packet Capture File", "*.vspcap"));
+                    exportDiag.Filters.Add(new CommonFileDialogFilter("Binary File", "*.bin"));
 
                     Dispatcher.Invoke((Action)(() =>
                     {
                         if (exportDiag.ShowDialog() == CommonFileDialogResult.Ok)
                         {
-                            File.WriteAllBytes(exportDiag.FileName, CustomPacketBuilder.BuildPacket(packet.SourceIP, packet.DestIP,
-                                                                                                    packet.SourcePort, packet.DestPort, packet.Data));
+                            File.WriteAllBytes(exportDiag.FileName, packet.Buffer);
                             System.Windows.MessageBox.Show($"Packet successfully saved to {exportDiag.FileName}.", "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
                         }
                     }));
@@ -148,11 +182,8 @@ namespace VinSeek.Views
                             {
                                 var currentDate = DateTime.Now.ToString("MM-dd-yy");
                                 int count = 0;
-                                foreach (CapturedPacketInfo packet in packets)
+                                foreach (VindictusPacket packet in packets)
                                 {
-                                    File.WriteAllBytes(System.IO.Path.Combine(dialog.FileName, currentDate + "-CaptureNo" + count.ToString() + ".vspcap"),
-                                                        CustomPacketBuilder.BuildPacket(packet.SourceIP, packet.DestIP,
-                                                                                        packet.SourcePort, packet.DestPort, packet.Data));
                                     count++;
                                 }
                                 System.Windows.MessageBox.Show($"Packets successfully saved to {dialog.FileName}.", "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
@@ -160,12 +191,11 @@ namespace VinSeek.Views
                         }));
                     }
                 }
-            }*/
+            }
         }
 
         private void ImportPacket_Click(object sender, RoutedEventArgs e)
         {
-            /*
             Dispatcher.Invoke((Action)(() =>
             {
                 using (CommonOpenFileDialog dialog = new CommonOpenFileDialog { IsFolderPicker = false })
@@ -174,23 +204,18 @@ namespace VinSeek.Views
                     // do nothing if no file is selected
                     if ((dialog.ShowDialog() == CommonFileDialogResult.Ok ? dialog.FileName : null) != null)
                     {
+                        string timestamp = DateTime.Now.ToString("hh:mm:ss.fff");
                         Dispatcher.Invoke((Action)(() =>
                         {
-                            if (System.IO.Path.GetExtension(dialog.FileName) != ".vspcap") // if not file that can extract info -> only get the data dump
-                            {
-                                System.Windows.MessageBox.Show($"Error importing! {dialog.FileName} is not a VinSeek Packet Capture File. Please use open file function instead",
-                                    "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
-                            }
-                            else
-                            {
-                                LoadPacketInfoFromFile(dialog.FileName);
-                            }
+                            var data = File.ReadAllBytes(dialog.FileName);
+                            var pack = new VindictusPacket(data, timestamp, false);
+                            PacketList.Add(pack);
                         }));
                     }
                 }
             }));
 
-            return;*/
+            return;
         }
 
         private void EditNote_Click(object sender, RoutedEventArgs e)
@@ -233,7 +258,7 @@ namespace VinSeek.Views
                 byte[] buffer = new Byte[Marshal.ReadInt32(lParam, IntPtr.Size)];
                 IntPtr dataPtr = Marshal.ReadIntPtr(lParam, IntPtr.Size * 2);
                 Marshal.Copy(dataPtr, buffer, 0, buffer.Length);
-                var packet = new VindictusPacket(buffer, timestamp);
+                var packet = new VindictusPacket(buffer, timestamp, true);
                 PacketList.Add(packet);
             }
             handled = false;

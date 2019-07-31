@@ -62,8 +62,14 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Aga.Controls">
+      <HintPath>..\libs\Aga.Controls.dll</HintPath>
+    </Reference>
     <Reference Include="Be.Windows.Forms.HexBox">
       <HintPath>..\libs\Be.Windows.Forms.HexBox.dll</HintPath>
+    </Reference>
+    <Reference Include="BeeSchema">
+      <HintPath>..\libs\BeeSchema.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.WindowsAPICodePack, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.WindowsAPICodePack.Core.1.1.0\lib\Microsoft.WindowsAPICodePack.dll</HintPath>
@@ -73,6 +79,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -93,17 +100,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Model\ParseResult.cs" />
+    <Compile Include="Model\ResultModel.cs" />
     <Compile Include="Model\VindictusPacket.cs" />
-    <Compile Include="Utilities\CustomPacketBuilder.cs" />
+    <Compile Include="Scripting\SchemaParser.cs" />
     <Compile Include="Utilities\FileAssociationManager.cs" />
     <Compile Include="Utilities\PacketFilter.cs" />
     <Compile Include="Utilities\ShortcutCommands.cs" />
     <Compile Include="Utilities\Util.cs" />
-    <Compile Include="Model\CapturedPacketInfo.cs" />
-    <Compile Include="Utils\CustomPacketBuilder.cs" />
-    <Compile Include="Utils\FileAssociationManager.cs" />
-    <Compile Include="Utils\PacketFilter.cs" />
-    <Compile Include="Utils\ShortcutCommands.cs" />
     <Compile Include="Views\EditNoteView.xaml.cs">
       <DependentUpon>EditNoteView.xaml</DependentUpon>
     </Compile>
@@ -166,8 +170,6 @@
   <ItemGroup>
     <Resource Include="Resources\vindictus_vinseek_icon.ico" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Scripting\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
