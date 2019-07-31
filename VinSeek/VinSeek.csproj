@@ -103,7 +103,6 @@
     <Compile Include="Model\ParseResult.cs" />
     <Compile Include="Model\ResultModel.cs" />
     <Compile Include="Model\VindictusPacket.cs" />
-    <Compile Include="Scripting\SchemaParser.cs" />
     <Compile Include="Utilities\FileAssociationManager.cs" />
     <Compile Include="Utilities\PacketFilter.cs" />
     <Compile Include="Utilities\ShortcutCommands.cs" />
