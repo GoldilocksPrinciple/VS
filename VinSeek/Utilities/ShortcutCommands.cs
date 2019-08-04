@@ -10,7 +10,7 @@ namespace VinSeek.Utilities
     public static class ShortcutCommands
     {
         static RoutedUICommand newTab = new RoutedUICommand("New Tab", "NewTab", typeof(ShortcutCommands));
-        static RoutedUICommand openFile = new RoutedUICommand("Open File(s)...", "OpenFile", typeof(ShortcutCommands));
+        static RoutedUICommand openFile = new RoutedUICommand("Open File...", "OpenFile", typeof(ShortcutCommands));
         static RoutedUICommand saveFile = new RoutedUICommand("Save", "SaveFile", typeof(ShortcutCommands));
         static RoutedUICommand saveFileAs = new RoutedUICommand("Save As...", "SaveFileAs", typeof(ShortcutCommands));
         static RoutedUICommand closeTab = new RoutedUICommand("Close", "CloseTab", typeof(ShortcutCommands));

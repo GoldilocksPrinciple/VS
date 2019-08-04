@@ -27,68 +27,20 @@ namespace VinSeek.Views
             // register custom file extension
             FileAssociationManager.SetAssociation(".vspcap", "VinSeek", FileAssociationManager.AssemmblyExecutablePath(), "VinSeek Packet Capture File");
 
-            // open by double click on packet file
-            if (App.fileName != null)
+            item = new TabItem();
+            // create default new tab
+            Dispatcher.Invoke((Action)(() =>
             {
-                var item = new TabItem();
                 item.Content = new VinSeekMainTab();
-                item.Header = System.IO.Path.GetFileName(App.fileName);
+                item.Header = "Start";
                 MainTabControl.Items.Add(item);
-                item.Focus();
-                ((VinSeekMainTab)item.Content).LoadPacketInfoFromFile(App.fileName);
-            }
-            else
-            {
-                item = new TabItem();
-                // create default new tab
-                Dispatcher.Invoke((Action)(() =>
-                {
-                    item.Content = new VinSeekMainTab();
-                    item.Header = "Start";
-                    MainTabControl.Items.Add(item);
-                }));
-            }
+            }));
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             base.OnSourceInitialized(e);
             this.PacketSource = PresentationSource.FromVisual(this) as HwndSource;
-        }
-        
-        public void OpenFile()
-        {
-            // file picker dialog
-            using (CommonOpenFileDialog dialog = new CommonOpenFileDialog { IsFolderPicker = false })
-            {
-                dialog.Title = "Select a file to open";
-                // do nothing if no file is selected
-                if ((dialog.ShowDialog() == CommonFileDialogResult.Ok ? dialog.FileName : null) != null)
-                {
-                    var item = new TabItem();
-                    item.Content = new VinSeekMainTab();
-                    item.Header = System.IO.Path.GetFileName(dialog.FileName);
-                    MainTabControl.Items.Add(item);
-                    item.Focus();
-
-                    ((VinSeekMainTab)item.Content).Dispatcher.Invoke((Action)(() =>
-                    {
-                        if (System.IO.Path.GetExtension(dialog.FileName) != ".vspcap") // if not file that can extract info -> only get the data dump
-                        {
-                            // load data into hex box
-                            ((VinSeekMainTab)item.Content).LoadDataFromFile(dialog.FileName);
-                        }
-                        else if (System.IO.Path.GetExtension(dialog.FileName) != ".pcap")
-                        {
-                            // TODO: Handle pcap file. Either use SharpPcap or PcapDotNet function to read pcap file
-                        }
-                        else
-                        {
-                            ((VinSeekMainTab)item.Content).LoadPacketInfoFromFile(dialog.FileName);
-                        }
-                    }));
-                }
-            }
         }
         
         #region Command Handlers
@@ -104,20 +56,39 @@ namespace VinSeek.Views
                 item.Focus();
             }));
         }
-        
+
         private void OpenFileCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Debug.WriteLine("Open File.");
-            OpenFile();
+            using (CommonOpenFileDialog dialog = new CommonOpenFileDialog { IsFolderPicker = false })
+            {
+                dialog.Title = "Select a XML capture file to open";
+                dialog.Filters.Add(new CommonFileDialogFilter("XML File", "*.xml"));
+
+                Dispatcher.Invoke((Action)(() =>
+                {
+                    if ((dialog.ShowDialog() == CommonFileDialogResult.Ok ? dialog.FileName : null) != null)
+                    {
+                        var item = new TabItem();
+                        item.Content = new VinSeekMainTab();
+                        item.Header = System.IO.Path.GetFileName(dialog.FileName);
+                        MainTabControl.Items.Add(item);
+                        item.Focus();
+                        ((VinSeekMainTab)item.Content).LoadCapture(dialog.FileName);
+                    }
+                }));
+            }
         }
-        
+
         private void SaveFileCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Debug.WriteLine("Save File.");
+            ((VinSeekMainTab)item.Content).SaveCapture();
         }
         private void SaveFileAsCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Debug.WriteLine("Save File As.");
+            ((VinSeekMainTab)item.Content).SaveCapture();
         }
         private void CloseTabCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
@@ -210,7 +181,7 @@ namespace VinSeek.Views
 
             MainTabControl.Items.RemoveAt(MainTabControl.SelectedIndex);
         }
-        
+
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
             e.Cancel = true;

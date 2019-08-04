@@ -100,6 +100,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Model\Capture.cs" />
     <Compile Include="Model\ParseResult.cs" />
     <Compile Include="Model\ResultModel.cs" />
     <Compile Include="Model\VindictusPacket.cs" />
@@ -107,6 +108,7 @@
     <Compile Include="Utilities\PacketFilter.cs" />
     <Compile Include="Utilities\ShortcutCommands.cs" />
     <Compile Include="Utilities\Util.cs" />
+    <Compile Include="Utilities\XMLImporter.cs" />
     <Compile Include="Views\EditNoteView.xaml.cs">
       <DependentUpon>EditNoteView.xaml</DependentUpon>
     </Compile>

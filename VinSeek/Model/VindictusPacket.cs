@@ -7,6 +7,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using VinSeek.Utilities;
+using System.Xml.Serialization;
 
 namespace VinSeek.Model
 {
@@ -14,15 +15,23 @@ namespace VinSeek.Model
     {
         private string _note;
 
+        [XmlIgnore]
         public string Direction { get; set; }
-
+        
         public string Time { get; set; }
+        
+        public string PacketName { get; set; }
 
-        public string PacketName { get; private set; }
+        [XmlIgnore]
+        public byte[] Buffer { get; set; }
 
-        public byte[] Buffer { get; private set; }
+        [XmlIgnore]
+        public byte[] BufferWithDirection { get; set; }
 
-
+        [XmlElement(ElementName = "Buffer")]
+        public string BufferString { get; set; }
+        
+        [XmlIgnore]
         public int PacketLength
         {
             get
@@ -31,17 +40,22 @@ namespace VinSeek.Model
             }
         }
 
+        [XmlIgnore]
         public int OpcodeBytesCount { get; private set; }
 
+        [XmlIgnore]
         public int Opcode { get; private set; }
 
+        [XmlIgnore]
         public int LengthBytesCount { get; private set; }
 
+        [XmlIgnore]
         public int Length { get; private set; }
 
+        [XmlIgnore]
         public int PacketOffset { get; private set; }
 
-
+        [XmlIgnore]
         public byte[] Body
         {
             get
@@ -53,6 +67,7 @@ namespace VinSeek.Model
             }
         }
 
+        [XmlIgnore]
         public string Note
         {
             get { return _note; }
@@ -73,10 +88,17 @@ namespace VinSeek.Model
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
         }
 
+        public VindictusPacket()
+        {
+            this.PacketName = String.Empty;
+        }
+
         public VindictusPacket(byte[] buffer, string time, bool flag)
         {
             if (flag)
             {
+                this.BufferWithDirection = buffer;
+
                 var d = new byte[1];
                 System.Buffer.BlockCopy(buffer, 0, d, 0, 1);
                 this.Direction = System.Text.Encoding.ASCII.GetString(d);

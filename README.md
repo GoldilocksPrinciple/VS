@@ -20,4 +20,3 @@ A Vindictus Packet Logger/Network Analysis Tool
 ## TO-DO LIST:
 - Automatically find corresponding template file (in a directory) based on packet's name and auto parsing.
 - Automatically parse all templates on 1 selected packet and calculate match %.
-- Save/Read all logged packet in/from 1 file.

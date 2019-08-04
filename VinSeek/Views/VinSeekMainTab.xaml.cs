@@ -16,6 +16,7 @@ using System.Reflection;
 using System.Windows.Interop;
 using BeeSchema;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace VinSeek.Views
 {
@@ -53,7 +54,7 @@ namespace VinSeek.Views
 
             Process[] ekinarProcess = Process.GetProcessesByName("Ekinar");
 
-            if (ekinarProcess.Length < 0) 
+            if (ekinarProcess.Length < 0)
             {
                 Dispatcher.Invoke((Action)(() =>
                 {
@@ -117,7 +118,7 @@ namespace VinSeek.Views
 
             if (packets.Count > 1)
                 return;
-            
+
             var packet = (VindictusPacket)PacketListView.Items[PacketListView.SelectedIndex];
 
             using (CommonOpenFileDialog dialog = new CommonOpenFileDialog { IsFolderPicker = false })
@@ -151,45 +152,40 @@ namespace VinSeek.Views
 
             if (packets.Count == 1)
             {
-                if (packets.Count == 1)
-                {
-                    var packet = (VindictusPacket)PacketListView.Items[PacketListView.SelectedIndex];
+                var packet = (VindictusPacket)PacketListView.Items[PacketListView.SelectedIndex];
 
-                    CommonSaveFileDialog exportDiag = new CommonSaveFileDialog();
-                    exportDiag.AlwaysAppendDefaultExtension = true;
-                    exportDiag.DefaultExtension = ".bin";
-                    exportDiag.DefaultFileName = "MyCapture";
-                    exportDiag.Filters.Add(new CommonFileDialogFilter("Binary File", "*.bin"));
+                CommonSaveFileDialog exportDiag = new CommonSaveFileDialog();
+                exportDiag.AlwaysAppendDefaultExtension = true;
+                exportDiag.DefaultExtension = ".bin";
+                exportDiag.DefaultFileName = "MyPacket";
+                exportDiag.Filters.Add(new CommonFileDialogFilter("Binary File", "*.bin"));
+
+                Dispatcher.Invoke((Action)(() =>
+                {
+                    if (exportDiag.ShowDialog() == CommonFileDialogResult.Ok)
+                    {
+                        File.WriteAllBytes(exportDiag.FileName, packet.Buffer);
+                        System.Windows.MessageBox.Show($"Packet successfully saved to {exportDiag.FileName}.", "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                    }
+                }));
+            }
+            else
+            {
+                using (CommonOpenFileDialog dialog = new CommonOpenFileDialog { IsFolderPicker = true })
+                {
+                    dialog.Title = "Select a folder to save packets";
 
                     Dispatcher.Invoke((Action)(() =>
                     {
-                        if (exportDiag.ShowDialog() == CommonFileDialogResult.Ok)
+                        if ((dialog.ShowDialog() == CommonFileDialogResult.Ok ? dialog.FileName : null) != null)
                         {
-                            File.WriteAllBytes(exportDiag.FileName, packet.Buffer);
-                            System.Windows.MessageBox.Show($"Packet successfully saved to {exportDiag.FileName}.", "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                            foreach (VindictusPacket packet in packets)
+                            {
+                                File.WriteAllBytes(dialog.FileName, packet.Buffer);
+                            }
+                            System.Windows.MessageBox.Show($"Packets successfully saved", "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
                         }
                     }));
-                }
-                else
-                {
-                    using (CommonOpenFileDialog dialog = new CommonOpenFileDialog { IsFolderPicker = true })
-                    {
-                        dialog.Title = "Select a folder to save packets";
-
-                        Dispatcher.Invoke((Action)(() =>
-                        {
-                            if ((dialog.ShowDialog() == CommonFileDialogResult.Ok ? dialog.FileName : null) != null)
-                            {
-                                var currentDate = DateTime.Now.ToString("MM-dd-yy");
-                                int count = 0;
-                                foreach (VindictusPacket packet in packets)
-                                {
-                                    count++;
-                                }
-                                System.Windows.MessageBox.Show($"Packets successfully saved to {dialog.FileName}.", "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
-                            }
-                        }));
-                    }
                 }
             }
         }
@@ -234,19 +230,60 @@ namespace VinSeek.Views
                     "Enter text to edit comment/note for this packet. Click OK to save changes.").ShowDialog();
             }));
         }
+        #endregion
 
-        
-        public void LoadPacketInfoFromFile(string filename)
+        #region Load, Save Captures
+        public void LoadCapture(string path)
         {
-            /*
-            byte[] fileData = File.ReadAllBytes(filename);
-            var pack = CustomPacketBuilder.ReadPacket(fileData);
-            Dispatcher.Invoke(new ThreadStart(() => { PacketList.Add(pack); }));
-            IntPtr intPtr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(byte)) * pack.DataLength);
-            Marshal.Copy(pack.Data, 0, intPtr, Marshal.SizeOf(typeof(byte)) * pack.DataLength);
-            
-            Marshal.FreeHGlobal(intPtr);*/
+            PacketList = new ObservableCollection<VindictusPacket>();
+            PacketListView.ItemsSource = PacketList;
+            try
+            {
+                var capture = XMLImporter.LoadCapture(path);
+                foreach (var packet in capture.Packets)
+                {
+                    var vindiPacket = new VindictusPacket(packet.BufferWithDirection, packet.Time, true);
+                    PacketList.Add(vindiPacket);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
+
+        public void SaveCapture()
+        {
+            if (PacketList.Count == 0)
+                return;
+
+            CommonSaveFileDialog saveDiag = new CommonSaveFileDialog();
+            saveDiag.AlwaysAppendDefaultExtension = true;
+            saveDiag.DefaultExtension = ".xml";
+            saveDiag.DefaultFileName = "MyCapture";
+            saveDiag.Filters.Add(new CommonFileDialogFilter("XML File", "*.xml"));
+
+            Dispatcher.Invoke((Action)(() =>
+            {
+                if (saveDiag.ShowDialog() == CommonFileDialogResult.Ok)
+                {
+                    var capture = new Capture
+                    {
+                        Packets = PacketListView.Items.Cast<VindictusPacket>().ToArray()
+                    };
+                    try
+                    {
+                        XMLImporter.SaveCapture(capture, saveDiag.FileName);
+                        System.Windows.MessageBox.Show($"Capture successfully saved to {saveDiag.FileName}.", "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw ex;
+                    }
+                }
+            }));
+        }
+
         #endregion
 
         #region Ekinar interops
