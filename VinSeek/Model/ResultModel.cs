@@ -41,6 +41,7 @@ namespace VinSeek.Model
 
                 _currentTab.Dispatcher.Invoke((Action)(() =>
                     {
+                        Debug.WriteLine(result.Type.ToString());
                         _currentTab.HexBox.HighlightBytes(result.Position, result.Size, System.Drawing.Color.Black, TypeColours[result.Type.ToString().ToLower()]);
                     }));
 
@@ -106,6 +107,7 @@ namespace VinSeek.Model
             { "char", System.Drawing.Color.FromArgb(0x7b, 0xc8, 0xf4) },
             { "float", System.Drawing.Color.FromArgb(0x7f, 0xc0, 0xc0) },
             { "array", System.Drawing.Color.RosyBrown },
+            { "bool", System.Drawing.Color.Yellow },
         };
     }
 }

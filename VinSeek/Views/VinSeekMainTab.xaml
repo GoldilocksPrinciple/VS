@@ -9,7 +9,7 @@
              xmlns:local="clr-namespace:VinSeek.Views"
              xmlns:utils="clr-namespace:VinSeek.Utilities"
              mc:Ignorable="d" 
-             d:DesignHeight="900" d:DesignWidth="1280">
+             d:DesignHeight="900" d:DesignWidth="1400">
     <Grid>
         <DockPanel VerticalAlignment="Stretch">
             <DockPanel>
@@ -83,10 +83,11 @@
                                 <GridView>
                                     <GridViewColumn Header="Opcode" Width="45" DisplayMemberBinding="{Binding Opcode}" />
                                     <GridViewColumn Header="Packet Name" Width="180" DisplayMemberBinding="{Binding PacketName}"/>
-                                    <GridViewColumn Header="Length" Width="100" DisplayMemberBinding="{Binding PacketLength}" />
-                                    <GridViewColumn Header="Offset" Width="50" DisplayMemberBinding="{Binding PacketOffset}" />
-                                    <GridViewColumn Header="Time" Width="120" DisplayMemberBinding="{Binding Time}"/>
-                                    <GridViewColumn Header="Comment" Width="400" DisplayMemberBinding="{Binding Note}"/>
+                                    <GridViewColumn Header="Length" Width="80" DisplayMemberBinding="{Binding PacketLength}" />
+                                    <GridViewColumn Header="Offset" Width="40" DisplayMemberBinding="{Binding PacketOffset}" />
+                                    <GridViewColumn Header="GUID" Width="240" DisplayMemberBinding="{Binding Guid}" />
+                                    <GridViewColumn Header="Time" Width="80" DisplayMemberBinding="{Binding Time}"/>
+                                    <GridViewColumn Header="Comment" Width="300" DisplayMemberBinding="{Binding Note}"/>
                                 </GridView>
                                 <!--<GridView>
                                     <GridViewColumn Header="Opcode" Width="120" />

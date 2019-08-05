@@ -56,6 +56,9 @@ namespace VinSeek.Model
         public int PacketOffset { get; private set; }
 
         [XmlIgnore]
+        public string Guid { get; set; }
+
+        [XmlIgnore]
         public byte[] Body
         {
             get
@@ -116,6 +119,16 @@ namespace VinSeek.Model
             this.LengthBytesCount = Util.GetBytesCount(Buffer, 8 + OpcodeBytesCount);
             this.Length = Util.GetInt32(Buffer, LengthBytesCount);
             this.PacketOffset = 8 + OpcodeBytesCount + LengthBytesCount;
+
+            if (this.Opcode == 0)
+            {
+                var guidBytes = new byte[16];
+                System.Buffer.BlockCopy(this.Buffer, this.PacketOffset, guidBytes, 0, 16);
+                this.Guid = BitConverter.ToString(guidBytes).Replace("-", string.Empty);
+            }
+            else
+                this.Guid = string.Empty;
+
             this.PacketName = "UNKNOWN";
             foreach (var knownOpcode in Enum.GetValues(typeof(KnownOpcodes)))
             {
