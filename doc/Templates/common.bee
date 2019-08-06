@@ -1,0 +1,19 @@
+struct KeyValueInt32 {
+	key: intBE;
+	value: intBE;
+}
+
+struct KeyValueByte {
+	key: intBE;
+	value: byte;
+}
+
+struct KeyValueBool {
+	key: intBE;
+	value: bool;
+}
+
+struct KeyValueFloat {
+	key: intBE;
+	value: float;
+}
