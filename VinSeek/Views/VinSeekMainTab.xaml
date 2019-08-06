@@ -9,7 +9,7 @@
              xmlns:local="clr-namespace:VinSeek.Views"
              xmlns:utils="clr-namespace:VinSeek.Utilities"
              mc:Ignorable="d" 
-             d:DesignHeight="900" d:DesignWidth="1400">
+             d:DesignHeight="800" d:DesignWidth="1400">
     <Grid>
         <DockPanel VerticalAlignment="Stretch">
             <DockPanel>
@@ -17,7 +17,7 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="5" />
-                        <ColumnDefinition Width="400" />
+                        <ColumnDefinition Width="500" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
@@ -87,7 +87,7 @@
                                     <GridViewColumn Header="Offset" Width="40" DisplayMemberBinding="{Binding PacketOffset}" />
                                     <GridViewColumn Header="GUID" Width="240" DisplayMemberBinding="{Binding Guid}" />
                                     <GridViewColumn Header="Time" Width="80" DisplayMemberBinding="{Binding Time}"/>
-                                    <GridViewColumn Header="Comment" Width="300" DisplayMemberBinding="{Binding Note}"/>
+                                    <GridViewColumn Header="Comment" Width="200" DisplayMemberBinding="{Binding Note}"/>
                                 </GridView>
                                 <!--<GridView>
                                     <GridViewColumn Header="Opcode" Width="120" />
@@ -119,7 +119,7 @@
                         <tree:TreeList.View>
                             <GridView>
                                 <GridView.Columns>
-                                    <GridViewColumn Width="150" Header="Name">
+                                    <GridViewColumn Width="260" Header="Name">
                                         <GridViewColumn.CellTemplate>
                                             <DataTemplate>
                                                 <StackPanel Orientation="Horizontal">
@@ -130,7 +130,7 @@
                                             </DataTemplate>
                                         </GridViewColumn.CellTemplate>
                                     </GridViewColumn>
-                                    <GridViewColumn Header="Type" Width="60" DisplayMemberBinding="{Binding TypeName}"/>
+                                    <GridViewColumn Header="Type" Width="80" DisplayMemberBinding="{Binding TypeName}"/>
                                     <GridViewColumn Header="Data" Width="180" DisplayMemberBinding="{Binding Value}"/>
                                 </GridView.Columns>
                             </GridView>

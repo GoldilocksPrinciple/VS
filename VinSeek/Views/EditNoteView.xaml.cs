@@ -21,6 +21,7 @@ namespace VinSeek.Views
 
         public new string ShowDialog()
         {
+            this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
             base.ShowDialog();
 
             return TextEditor.Text;

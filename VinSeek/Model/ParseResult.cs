@@ -35,7 +35,22 @@ namespace VinSeek.Model
         }
         public string TypeName
         {
-            get { return _typename; }
+            get {
+                if (_typename == "int16be")
+                    return "int16 (BE)";
+                else if (_typename == "int16")
+                    return "int16 (LE)";
+                else if (_typename == "int")
+                    return "int32 (LE)";
+                else if (_typename == "intbe")
+                    return "int32 (BE)";
+                else if (_typename == "int64")
+                    return "int64 (LE)";
+                else if (_typename == "int64be")
+                    return "int64 (BE)";
+                else
+                    return _typename;
+            }
             set
             {
                 _typename = value;

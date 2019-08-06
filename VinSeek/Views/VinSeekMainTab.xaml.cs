@@ -100,13 +100,20 @@ namespace VinSeek.Views
 
         public void SchemaParser(string schemaPath, VindictusPacket packet)
         {
-            var schema = Schema.FromFile(schemaPath);
-            var result = schema.Parse(packet.Buffer);
-            var model = ResultModel.CreateModel(this, result);
-            Dispatcher.Invoke((Action)(() =>
+            try
             {
-                ParseResultTree.Model = model;
-            }));
+                var schema = Schema.FromFile(schemaPath);
+                var result = schema.Parse(packet.Buffer);
+                var model = ResultModel.CreateModel(this, result);
+                Dispatcher.Invoke((Action)(() =>
+                {
+                    ParseResultTree.Model = model;
+                }));
+            }
+            catch (Exception ex)
+            {
+                new ErrorConsoleView(ex.Message, "AN ERROR OCCURRED WHILE PARSING TEMPLATE").ShowDialog();
+            }
         }
 
         private void RunTemplate_Click(object sender, RoutedEventArgs e)

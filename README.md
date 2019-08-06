@@ -14,10 +14,13 @@ A Vindictus Packet Logger/Network Analysis Tool
 2. Custom version of [BeeSchema](https://github.com/Michael-Kelley/BeeSchema)
 	* Added support for VarInt data type.
 	* Added support for parsing array of struct.
+	* Changed Short to Int16, Long to Int64.
+	* Added support for Big-Edian order Int(16/32/64) data types.
 
 3. Custom TreeListView control for WPF
 
 ## TO-DO LIST:
-- Display debug console under hexbox (mostly for displaying error from parsing template).
+- Jump to position n in HexBox when selecting data in TreeListView.
 - Automatically find corresponding template file (in a directory) based on packet's name and auto parsing.
-- Automatically parse all templates on 1 selected packet and calculate match %.
+- Add support for Dictionary data type.
+- Automatically parse all templates on 1 selected packet and calculate match % (Need more discussion).

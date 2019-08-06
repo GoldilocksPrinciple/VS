@@ -112,10 +112,17 @@
     <Compile Include="Views\EditNoteView.xaml.cs">
       <DependentUpon>EditNoteView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\ErrorConsoleView.xaml.cs">
+      <DependentUpon>ErrorConsoleView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\VinSeekMainTab.xaml.cs">
       <DependentUpon>VinSeekMainTab.xaml</DependentUpon>
     </Compile>
     <Page Include="Views\EditNoteView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ErrorConsoleView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

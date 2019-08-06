@@ -32,10 +32,8 @@ namespace VinSeek.Model
             foreach (var result in collection)
             {
                 ParseResult r1;
-                if (result.Type == NodeType.Struct)
+                if (result.Type == NodeType.Struct || result.Value.ToString().Contains("System.Collection") || result.Value.ToString().Contains("ResultCollection"))
                     r1 = new ParseResult() { Name = result.Name.ToString()};
-                else if (result.Value.ToString().Contains("System.Collection"))
-                    r1 = new ParseResult() { Name = result.Name.ToString() };
                 else
                     r1 = new ParseResult() { Name = result.Name.ToString(), TypeName = result.TypeName.ToString(), Value = result.Value.ToString() };
 
@@ -51,20 +49,22 @@ namespace VinSeek.Model
                 {
                     foreach (var resultCollection in result.ListChildren)
                     {
+                        var r2 = new ParseResult() { Name = result.Name.ToString() };
+                        r1.Children.Add(r2);
                         foreach (var re in resultCollection)
                         {
-                            ParseResult r2;
+                            ParseResult r3;
                             if (re.Type == NodeType.Struct)
-                                r2 = new ParseResult() { Name = re.Name.ToString() };
+                                r3 = new ParseResult() { Name = re.Name.ToString() };
                             else
-                                r2 = new ParseResult() { Name = re.Name.ToString(), TypeName = re.TypeName.ToString(), Value = re.Value.ToString() };
+                                r3 = new ParseResult() { Name = re.Name.ToString(), TypeName = re.TypeName.ToString(), Value = re.Value.ToString() };
                             
-                            r1.Children.Add(r2);
+                            r2.Children.Add(r3);
 
                             if (re.HasChildren)
                             {
-                                var r3 = RetrieveResult(re.Children);
-                                r2.Children.Add(r3);
+                                var r4 = RetrieveResult(re.Children);
+                                r3.Children.Add(r4);
                             }
                         }
                     }
@@ -100,14 +100,18 @@ namespace VinSeek.Model
         
         public static readonly Dictionary<string, System.Drawing.Color> TypeColours = new Dictionary<string, System.Drawing.Color>
         {
-            { "long", System.Drawing.Color.FromArgb(0xab, 0xc8, 0xf4) },
-            { "varint", System.Drawing.Color.FromArgb(0xd7, 0x89, 0x8c) },
             { "byte", System.Drawing.Color.FromArgb(0x89, 0xd7, 0xb7) },
+            { "bool", System.Drawing.Color.Yellow },
+            { "int16", System.Drawing.Color.DarkBlue },
+            { "int16be", System.Drawing.Color.DarkBlue },
             { "int", System.Drawing.Color.Cyan },
+            { "intbe", System.Drawing.Color.Cyan },
+            { "int64", System.Drawing.Color.FromArgb(0xab, 0xc8, 0xf4) },
+            { "int64be", System.Drawing.Color.FromArgb(0xab, 0xc8, 0xf4) },
+            { "varint", System.Drawing.Color.FromArgb(0xd7, 0x89, 0x8c) },
             { "char", System.Drawing.Color.FromArgb(0x7b, 0xc8, 0xf4) },
             { "float", System.Drawing.Color.FromArgb(0x7f, 0xc0, 0xc0) },
             { "array", System.Drawing.Color.RosyBrown },
-            { "bool", System.Drawing.Color.Yellow },
         };
     }
 }
