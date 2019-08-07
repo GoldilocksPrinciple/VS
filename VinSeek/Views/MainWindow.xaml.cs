@@ -37,6 +37,11 @@ namespace VinSeek.Views
             }));
         }
 
+        /// <summary>
+        /// Window loaded event handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             base.OnSourceInitialized(e);
@@ -44,6 +49,11 @@ namespace VinSeek.Views
         }
         
         #region Command Handlers
+        /// <summary>
+        /// New tab button clicked event handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void NewTabCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Debug.WriteLine("New Tab.");
@@ -57,6 +67,11 @@ namespace VinSeek.Views
             }));
         }
 
+        /// <summary>
+        /// Open file button clicked event handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OpenFileCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Debug.WriteLine("Open File.");
@@ -80,16 +95,33 @@ namespace VinSeek.Views
             }
         }
 
+        /// <summary>
+        /// Save file button clicked event handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void SaveFileCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Debug.WriteLine("Save File.");
             ((VinSeekMainTab)item.Content).SaveCapture();
         }
+
+        /// <summary>
+        /// Save file as button clicked event handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void SaveFileAsCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Debug.WriteLine("Save File As.");
             ((VinSeekMainTab)item.Content).SaveCapture();
         }
+
+        /// <summary>
+        /// Close tab button clicked event handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void CloseTabCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Debug.WriteLine("Close Tab.");
@@ -99,6 +131,12 @@ namespace VinSeek.Views
 
             MainTabControl.Items.RemoveAt(MainTabControl.SelectedIndex);
         }
+
+        /// <summary>
+        /// Close all tab button clicked event handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void CloseAllTabCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Debug.WriteLine("Close All Tab.");
@@ -108,11 +146,23 @@ namespace VinSeek.Views
 
             MainTabControl.Items.Clear();
         }
+
+        /// <summary>
+        /// Exit application button clicked event handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ExitApplicationCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Debug.WriteLine("Exit Application.");
             Environment.Exit(0);
         }
+
+        /// <summary>
+        /// Start capture button clicked event handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void StartCaptureCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Debug.WriteLine("Start Capture.");
@@ -125,6 +175,12 @@ namespace VinSeek.Views
 
             ((VinSeekMainTab)item.Content).StartCapturePackets();
         }
+
+        /// <summary>
+        /// Stop capture button clicked event handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void StopCaptureCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             if (MainTabControl.Items.Count == 0)
@@ -136,14 +192,32 @@ namespace VinSeek.Views
             Debug.WriteLine("Stop Capture.");
             ((VinSeekMainTab)item.Content).StopCapturePackets();
         }
+
+        /// <summary>
+        /// Open script button clicked event handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OpenScriptCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Debug.WriteLine("Open Script.");
         }
+
+        /// <summary>
+        /// Edit script button clicked event handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void EditScriptCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Debug.WriteLine("Edit Script.");
         }
+
+        /// <summary>
+        /// Run script button clicked event handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void RunScriptCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Debug.WriteLine("Run Script.");
@@ -154,14 +228,32 @@ namespace VinSeek.Views
                 return;
             }
         }
+
+        /// <summary>
+        /// Open template button clicked event handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OpenTemplateCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Debug.WriteLine("Open Template.");
         }
+
+        /// <summary>
+        /// Edit template button clicked event handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void EditTemplateCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Debug.WriteLine("Edit Template.");
         }
+
+        /// <summary>
+        /// Run template button clicked event handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void RunTemplateCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Debug.WriteLine("Run Template.");
@@ -172,6 +264,12 @@ namespace VinSeek.Views
                 return;
             }
         }
+        
+        /// <summary>
+        /// Tab close button clicked event handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void TabCloseClick(object sender, RoutedEventArgs e)
         {
             Debug.WriteLine("Close Tab.");
@@ -182,6 +280,10 @@ namespace VinSeek.Views
             MainTabControl.Items.RemoveAt(MainTabControl.SelectedIndex);
         }
 
+        /// <summary>
+        /// Overide closing event of MainWindow
+        /// </summary>
+        /// <param name="e"></param>
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
             e.Cancel = true;

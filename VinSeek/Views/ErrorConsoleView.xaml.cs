@@ -25,6 +25,11 @@ namespace VinSeek.Views
             
         }
 
+        /// <summary>
+        /// Create a window with corresponding information
+        /// </summary>
+        /// <param name="message">displayed error message</param>
+        /// <param name="title">window's custom title</param>
         public ErrorConsoleView(string message, string title)
         {
             this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
@@ -34,6 +39,11 @@ namespace VinSeek.Views
             System.Media.SystemSounds.Exclamation.Play();
         }
 
+        /// <summary>
+        /// Ok button clicked event handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
         {
             this.Close();

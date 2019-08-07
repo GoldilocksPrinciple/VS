@@ -32,24 +32,35 @@ namespace VinSeek.Views
         {
             InitializeComponent();
 
-            PacketList = new ObservableCollection<VindictusPacket>();
+            this.PacketList = new ObservableCollection<VindictusPacket>();
             PacketListView.ItemsSource = PacketList;
         }
 
+        /// <summary>
+        /// Update hexbox using read all bytes from a file
+        /// </summary>
+        /// <param name="fileName">name of file</param>
         public void LoadDataFromFile(string fileName)
         {
             HexBox.ByteProvider = new DynamicFileByteProvider(fileName);
         }
 
+        /// <summary>
+        /// Update hexbox using byte arrays
+        /// </summary>
+        /// <param name="data">buffer</param>
         public void LoadDataFromStream(byte[] data)
         {
             HexBox.ByteProvider = new DynamicByteProvider(data);
         }
 
-        #region Machina
+        #region Capture
+        /// <summary>
+        /// Start accepting packets from the packet provider
+        /// </summary>
         public void StartCapturePackets()
         {
-            PacketList = new ObservableCollection<VindictusPacket>();
+            this.PacketList = new ObservableCollection<VindictusPacket>();
             PacketListView.ItemsSource = PacketList;
 
             Process[] ekinarProcess = Process.GetProcessesByName("Ekinar");
@@ -74,6 +85,9 @@ namespace VinSeek.Views
             }
         }
 
+        /// <summary>
+        /// Stop accepting packets from the packet provider
+        /// </summary>
         public void StopCapturePackets()
         {
             _mainWindow.PacketSource.RemoveHook(WndProc);
@@ -86,18 +100,28 @@ namespace VinSeek.Views
 
         }
 
+        /// <summary>
+        /// PacketListView selected item changed event handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         public void PacketListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             Dispatcher.Invoke((Action)(() =>
             {
-                if (PacketList.Count == 0)
+                if (this.PacketList.Count == 0)
                     return;
 
-                UpdateSelectedItemHexBox(PacketListView.SelectedIndex);
+                this.UpdateSelectedItemHexBox(PacketListView.SelectedIndex);
             }));
 
         }
 
+        /// <summary>
+        /// Parsing method for a template file on a selected packet buffer
+        /// </summary>
+        /// <param name="schemaPath">path to schema template file</param>
+        /// <param name="packet">packet that needed to parse the template on</param>
         public void SchemaParser(string schemaPath, VindictusPacket packet)
         {
             try
@@ -116,6 +140,11 @@ namespace VinSeek.Views
             }
         }
 
+        /// <summary>
+        /// Run template button clicked event handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void RunTemplate_Click(object sender, RoutedEventArgs e)
         {
             var packets = PacketListView.SelectedItems;
@@ -135,21 +164,31 @@ namespace VinSeek.Views
                 if ((dialog.ShowDialog() == CommonFileDialogResult.Ok ? dialog.FileName : null) != null)
                 {
                     this.SchemaParser(dialog.FileName, packet);
+                    dialog.Dispose();
                 }
             }
         }
 
+        /// <summary>
+        /// Update hexbox using correct buffer of selected packet in PacketListView
+        /// </summary>
+        /// <param name="index">index of selected item</param>
         public void UpdateSelectedItemHexBox(int index)
         {
             if (index == -1)
                 return;
 
             var data = PacketList[index].Buffer;
-            LoadDataFromStream(data);
+            this.LoadDataFromStream(data);
         }
         #endregion
 
         #region Export, Import, Edit Packets
+        /// <summary>
+        /// Export packet button click event handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ExportPacket_Click(object sender, RoutedEventArgs e)
         {
             var packets = PacketListView.SelectedItems;
@@ -173,6 +212,7 @@ namespace VinSeek.Views
                     {
                         File.WriteAllBytes(exportDiag.FileName, packet.Buffer);
                         System.Windows.MessageBox.Show($"Packet successfully saved to {exportDiag.FileName}.", "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                        exportDiag.Dispose();
                     }
                 }));
             }
@@ -191,12 +231,18 @@ namespace VinSeek.Views
                                 File.WriteAllBytes(dialog.FileName, packet.Buffer);
                             }
                             System.Windows.MessageBox.Show($"Packets successfully saved", "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                            dialog.Dispose();
                         }
                     }));
                 }
             }
         }
 
+        /// <summary>
+        /// Import packet button clicked event handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ImportPacket_Click(object sender, RoutedEventArgs e)
         {
             Dispatcher.Invoke((Action)(() =>
@@ -212,8 +258,9 @@ namespace VinSeek.Views
                         {
                             var data = File.ReadAllBytes(dialog.FileName);
                             var pack = new VindictusPacket(data, timestamp, false);
-                            PacketList.Add(pack);
+                            this.PacketList.Add(pack);
                         }));
+                        dialog.Dispose();
                     }
                 }
             }));
@@ -221,6 +268,11 @@ namespace VinSeek.Views
             return;
         }
 
+        /// <summary>
+        /// Edit note button clicked event handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void EditNote_Click(object sender, RoutedEventArgs e)
         {
             var index = PacketListView.SelectedIndex;
@@ -240,9 +292,13 @@ namespace VinSeek.Views
         #endregion
 
         #region Load, Save Captures
+        /// <summary>
+        /// Load a selected capture file (XML) to view
+        /// </summary>
+        /// <param name="path">path to capture file to load</param>
         public void LoadCapture(string path)
         {
-            PacketList = new ObservableCollection<VindictusPacket>();
+            this.PacketList = new ObservableCollection<VindictusPacket>();
             PacketListView.ItemsSource = PacketList;
             try
             {
@@ -250,7 +306,7 @@ namespace VinSeek.Views
                 foreach (var packet in capture.Packets)
                 {
                     var vindiPacket = new VindictusPacket(packet.BufferWithDirection, packet.Time, true);
-                    PacketList.Add(vindiPacket);
+                    this.PacketList.Add(vindiPacket);
                 }
             }
             catch (Exception ex)
@@ -259,6 +315,9 @@ namespace VinSeek.Views
             }
         }
 
+        /// <summary>
+        /// Save current captured packets to a capture file (XML)
+        /// </summary>
         public void SaveCapture()
         {
             if (PacketList.Count == 0)
@@ -282,6 +341,7 @@ namespace VinSeek.Views
                     {
                         XMLImporter.SaveCapture(capture, saveDiag.FileName);
                         System.Windows.MessageBox.Show($"Capture successfully saved to {saveDiag.FileName}.", "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                        saveDiag.Dispose();
                     }
                     catch (Exception ex)
                     {
@@ -294,6 +354,15 @@ namespace VinSeek.Views
         #endregion
 
         #region Ekinar interops
+        /// <summary>
+        /// Processing data received from packet provider
+        /// </summary>
+        /// <param name="hwnd"></param>
+        /// <param name="msg"></param>
+        /// <param name="wParam"></param>
+        /// <param name="lParam"></param>
+        /// <param name="handled"></param>
+        /// <returns></returns>
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
             if (msg == 0x004A)

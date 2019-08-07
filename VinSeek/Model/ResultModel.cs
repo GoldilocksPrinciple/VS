@@ -15,6 +15,12 @@ namespace VinSeek.Model
     {
         private static VinSeekMainTab _currentTab;
 
+        /// <summary>
+        /// Create parse result model for TreeListView of current VinSeek tab
+        /// </summary>
+        /// <param name="currentTab">current VinSeek tab</param>
+        /// <param name="collection">template parsing result</param>
+        /// <returns></returns>
         public static ResultModel CreateModel(VinSeekMainTab currentTab, ResultCollection collection)
         {
             _currentTab = currentTab;
@@ -26,6 +32,11 @@ namespace VinSeek.Model
             return model;
         }
 
+        /// <summary>
+        /// Create TreeView structure for parse result
+        /// </summary>
+        /// <param name="collection">template parsing result</param>
+        /// <returns></returns>
         private static ParseResult RetrieveResult(ResultCollection collection)
         {
             var totalResult = new ParseResult() { Name = "Data" };
@@ -85,6 +96,11 @@ namespace VinSeek.Model
             Root = new ParseResult();
         }
 
+        /// <summary>
+        /// Get children of a node
+        /// </summary>
+        /// <param name="parent">parent node</param>
+        /// <returns></returns>
         public IEnumerable GetChildren(object parent)
         {
             if (parent == null)
@@ -93,11 +109,19 @@ namespace VinSeek.Model
 
         }
 
+        /// <summary>
+        /// Check if object in TreeView has a children node
+        /// </summary>
+        /// <param name="parent">parent node</param>
+        /// <returns></returns>
         public bool HasChildren(object parent)
         {
             return (parent as ParseResult).Children.Count > 0;
         }
         
+        /// <summary>
+        /// Color for each data type
+        /// </summary>
         public static readonly Dictionary<string, System.Drawing.Color> TypeColours = new Dictionary<string, System.Drawing.Color>
         {
             { "byte", System.Drawing.Color.FromArgb(0x89, 0xd7, 0xb7) },

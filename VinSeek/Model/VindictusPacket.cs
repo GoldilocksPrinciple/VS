@@ -91,11 +91,20 @@ namespace VinSeek.Model
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
         }
 
+        /// <summary>
+        /// Non-parameter constructor for XML Serialize purpose
+        /// </summary>
         public VindictusPacket()
         {
             this.PacketName = String.Empty;
         }
 
+        /// <summary>
+        /// Create a new vindictus packet
+        /// </summary>
+        /// <param name="buffer">buffer</param>
+        /// <param name="time">buffer received timestamp</param>
+        /// <param name="flag">flag indicate if buffer contains packet direction information</param>
         public VindictusPacket(byte[] buffer, string time, bool flag)
         {
             if (flag)
