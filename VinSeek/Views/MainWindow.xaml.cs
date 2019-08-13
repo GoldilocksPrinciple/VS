@@ -18,7 +18,6 @@ namespace VinSeek.Views
     public partial class MainWindow : Window
     {
         private TabItem item;
-        public HwndSource PacketSource;
 
         public MainWindow()
         {
@@ -45,7 +44,6 @@ namespace VinSeek.Views
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             base.OnSourceInitialized(e);
-            this.PacketSource = PresentationSource.FromVisual(this) as HwndSource;
         }
         
         #region Command Handlers

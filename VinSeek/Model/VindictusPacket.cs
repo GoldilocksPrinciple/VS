@@ -14,8 +14,7 @@ namespace VinSeek.Model
     public class VindictusPacket : INotifyPropertyChanged
     {
         private string _note;
-
-        [XmlIgnore]
+        
         public string Direction { get; set; }
         
         public string Time { get; set; }
@@ -105,24 +104,11 @@ namespace VinSeek.Model
         /// <param name="buffer">buffer</param>
         /// <param name="time">buffer received timestamp</param>
         /// <param name="flag">flag indicate if buffer contains packet direction information</param>
-        public VindictusPacket(byte[] buffer, string time, bool flag)
+        public VindictusPacket(byte[] buffer, string time, string direction)
         {
-            if (flag)
-            {
-                this.BufferWithDirection = buffer;
-
-                var d = new byte[1];
-                System.Buffer.BlockCopy(buffer, 0, d, 0, 1);
-                this.Direction = System.Text.Encoding.ASCII.GetString(d);
-
-                var packBuffer = new byte[buffer.Length - 1];
-                System.Buffer.BlockCopy(buffer, 1, packBuffer, 0, buffer.Length - 1);
-                this.Buffer = packBuffer;
-            }
-            else
-                this.Buffer = buffer;
-
+            this.Buffer = buffer;
             this.Time = time;
+            this.Direction = direction;
             this.OpcodeBytesCount = Util.GetBytesCount(Buffer, 8);
             this.Opcode = Util.GetInt32(Buffer, 8);
             this.LengthBytesCount = Util.GetBytesCount(Buffer, 8 + OpcodeBytesCount);
@@ -153,6 +139,7 @@ namespace VinSeek.Model
         #region Opcodes
         enum KnownOpcodes
         {
+            UNKNOWN = 0,
             CM_CHAR_NAME_CHECK = 456,
             CM_ENTER_TOWN = 464,
             CM_CLIENT_INFO = 526,

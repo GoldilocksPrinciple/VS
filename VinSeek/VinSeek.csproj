@@ -68,8 +68,8 @@
     <Reference Include="Be.Windows.Forms.HexBox">
       <HintPath>..\libs\Be.Windows.Forms.HexBox.dll</HintPath>
     </Reference>
-    <Reference Include="BeeSchema">
-      <HintPath>..\libs\BeeSchema.dll</HintPath>
+    <Reference Include="Machina">
+      <HintPath>..\libs\Machina.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.WindowsAPICodePack, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.WindowsAPICodePack.Core.1.1.0\lib\Microsoft.WindowsAPICodePack.dll</HintPath>
@@ -101,9 +101,12 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Model\Capture.cs" />
-    <Compile Include="Model\ParseResult.cs" />
-    <Compile Include="Model\ResultModel.cs" />
     <Compile Include="Model\VindictusPacket.cs" />
+    <Compile Include="Network\Isaac.cs" />
+    <Compile Include="Network\MachinaWorker.cs" />
+    <Compile Include="Network\PacketReassembler.cs" />
+    <Compile Include="Network\Transformer.cs" />
+    <Compile Include="Templating\Parser.cs" />
     <Compile Include="Utilities\FileAssociationManager.cs" />
     <Compile Include="Utilities\PacketFilter.cs" />
     <Compile Include="Utilities\ShortcutCommands.cs" />
