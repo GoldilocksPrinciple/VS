@@ -104,6 +104,7 @@
     <Compile Include="Model\VindictusPacket.cs" />
     <Compile Include="Network\Isaac.cs" />
     <Compile Include="Network\MachinaWorker.cs" />
+    <Compile Include="Network\PacketIdentifier.cs" />
     <Compile Include="Network\PacketReassembler.cs" />
     <Compile Include="Network\Transformer.cs" />
     <Compile Include="Templating\Parser.cs" />
