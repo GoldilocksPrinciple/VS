@@ -19,7 +19,7 @@ namespace VinSeek.Utilities
             {
                 foreach (var packet in capture.Packets)
                 {
-                    packet.BufferString = Util.ByteArrayToString(packet.BufferWithDirection);
+                    packet.BufferString = Util.ByteArrayToString(packet.Buffer);
                 }
             }
             var serializer = new XmlSerializer(typeof(Capture));
@@ -37,7 +37,7 @@ namespace VinSeek.Utilities
                 {
                     foreach (var packet in capture.Packets)
                     {
-                        packet.BufferWithDirection = Util.StringToByteArray(packet.BufferString);
+                        packet.Buffer = Util.StringToByteArray(packet.BufferString);
                     }
                 }
 

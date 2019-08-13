@@ -37,7 +37,7 @@ namespace VinSeek.Views
             this.PacketList = new ObservableCollection<VindictusPacket>();
             PacketListView.ItemsSource = PacketList;
         }
-        
+
         #region Capture
         /// <summary>
         /// Start capturing network packets
@@ -78,7 +78,7 @@ namespace VinSeek.Views
                 _captureWorker.Stop();
                 _captureThread.Join();
             }
-            
+
             _captureWorker.ReassemblerServer.Dispose();
             _captureWorker.ReassemblerClient.Dispose();
             _captureWorker = null;
@@ -89,7 +89,7 @@ namespace VinSeek.Views
             }));
         }
         #endregion
-        
+
         #region Export, Import, Edit Packets
         /// <summary>
         /// Export packet button click event handler
@@ -211,7 +211,7 @@ namespace VinSeek.Views
                 var capture = XMLImporter.LoadCapture(path);
                 foreach (var packet in capture.Packets)
                 {
-                    var vindiPacket = new VindictusPacket(packet.BufferWithDirection, packet.Time, packet.Direction);
+                    var vindiPacket = new VindictusPacket(packet.Buffer, packet.Time, packet.Direction);
                     this.PacketList.Add(vindiPacket);
                 }
             }
@@ -243,16 +243,10 @@ namespace VinSeek.Views
                     {
                         Packets = PacketListView.Items.Cast<VindictusPacket>().ToArray()
                     };
-                    try
-                    {
-                        XMLImporter.SaveCapture(capture, saveDiag.FileName);
-                        System.Windows.MessageBox.Show($"Capture successfully saved to {saveDiag.FileName}.", "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
-                        saveDiag.Dispose();
-                    }
-                    catch (Exception ex)
-                    {
-                        throw ex;
-                    }
+
+                    XMLImporter.SaveCapture(capture, saveDiag.FileName);
+                    System.Windows.MessageBox.Show($"Capture successfully saved to {saveDiag.FileName}.", "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                    saveDiag.Dispose();
                 }
             }));
         }

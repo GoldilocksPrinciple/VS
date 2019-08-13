@@ -24,9 +24,6 @@ namespace VinSeek.Model
         [XmlIgnore]
         public byte[] Buffer { get; set; }
 
-        [XmlIgnore]
-        public byte[] BufferWithDirection { get; set; }
-
         [XmlElement(ElementName = "Buffer")]
         public string BufferString { get; set; }
         
