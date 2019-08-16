@@ -44,13 +44,19 @@ namespace VinSeek.Network
             SM_CHARACTER_QUICK_SLOTS = 742,
             SM_PIN_RESPONSE = 757,
             CM_SET_PIN = 767,
+            SM_CHARACTER_SKILLS = 780,
             SM_CHARACTER_SP_SKILL = 781,
             SM_UPDATE_STATUS_EFFECT = 793,
             SM_STORY_STATUS = 795,
             SM_SYSTEM_MSG = 798,
             SM_CHARACTER_INFO = 801,
             SM_UPDATE_INVENTORY_INFO = 809,
-            SM_CHARACTER_STATS = 811
+            SM_CHARACTER_STATS = 811,
+            SM_TRANSFORMATION_SKILLS = 824,
+            SM_CHAT_BLOCK_LIST = 828,
+            SM_CHARACTER_GUILD_NEWS = 1020,
+            SM_CHARACTER_GUILD_INFO = 1065,
+            SM_GUILD_MEMBERS_LIST = 1077
         }
 
         public static Dictionary<string, int> Guids = new Dictionary<string, int>()
