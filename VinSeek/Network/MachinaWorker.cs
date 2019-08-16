@@ -20,8 +20,10 @@ namespace VinSeek.Network
         private bool _stopCapturing;
         private uint _processId;
         public bool foundProcessId = false;
-        public PacketReassembler ReassemblerServer = new PacketReassembler();
-        public PacketReassembler ReassemblerClient = new PacketReassembler();
+        private static PacketHandler _packetHandlerServerWorld = new PacketHandler(true, new Transformer());
+        private PacketHandler _packetHandlerServerChannel = new PacketHandler(false, null);
+        private static PacketHandler _packetHandlerClientWorld = new PacketHandler(true, new Transformer());
+        private PacketHandler _packetHandlerClientChannel = new PacketHandler(false, null);
 
         public MachinaWorker(VinSeekMainTab currentTab)
         {
@@ -35,10 +37,15 @@ namespace VinSeek.Network
             while (!_stopCapturing)
             {
                 Process[] vindictusProcess = Process.GetProcessesByName("Vindictus");
+                Process[] heroesProcess = Process.GetProcessesByName("heroes");
 
-                if (vindictusProcess.Length > 0) // can't be more than 1 instance right... 
+                if (vindictusProcess.Length > 0 || heroesProcess.Length > 0) // can't be more than 1 instance right... 
                 {
-                    _processId = (uint)vindictusProcess[0].Id;
+                    if (vindictusProcess.Length > 0)
+                        _processId = (uint)vindictusProcess[0].Id;
+                    else
+                        _processId = (uint)heroesProcess[0].Id;
+
                     string info = "Listening for connection of Process [" + _processId.ToString() + "]";
                     _currentVinSeekTab.UpdateCaptureProcessInfo(info);
                     foundProcessId = true;
@@ -61,8 +68,9 @@ namespace VinSeek.Network
                                         => DataReceived(connection, tcpConnection, data);
                 monitor.DataSent += (string connection, TCPConnection tcpConnection, byte[] data)
                                         => DataSent(connection, tcpConnection, data);
+
                 monitor.Start();
-                
+
                 while (!_stopCapturing)
                 {
                     Thread.Sleep(1);
@@ -84,38 +92,96 @@ namespace VinSeek.Network
 
         private void DataReceived(string connection, TCPConnection tcpConnection, byte[] data)
         {
-            if (tcpConnection.RemotePort.ToString() != "27015") // display filter
-                return;
-
-            var completedBuffer = ReassemblerServer.AnalyzePacket(data);
-
-            if (completedBuffer != null)
+            // 27015 = world, 2023 = channel, 27005 = dungeon, 27009 = PN
+            if (tcpConnection.RemotePort.ToString() == "27015")
             {
+                var buffer = new byte[data.Length];
+                Buffer.BlockCopy(data, 0, buffer, 0, data.Length);
+                var completedBuffer = _packetHandlerServerWorld.AnalyzePacket(buffer, true);
+                if (completedBuffer != null)
+                {
+                    string timestamp = DateTime.Now.ToString("hh:mm:ss.fff");
+                    var packet = new VindictusPacket(completedBuffer, timestamp, "S", "27015");
+                    _currentVinSeekTab.Dispatcher.Invoke(new Action(() =>
+                    {
+                        _currentVinSeekTab.PacketList.Add(packet);
+                    }));
+                }
+            }
+            else if (tcpConnection.RemotePort.ToString() == "27023") //TODO: Figure out if channel server packets is not encrypted or not
+            {
+                var buffer = new byte[data.Length];
+                Buffer.BlockCopy(data, 0, buffer, 0, data.Length);
+                var completedBuffer = _packetHandlerServerChannel.AnalyzePacket(buffer, false);
+                if (completedBuffer != null)
+                {
+                    string timestamp = DateTime.Now.ToString("hh:mm:ss.fff");
+                    var packet = new VindictusPacket(completedBuffer, timestamp, "S", "27023");
+                    _currentVinSeekTab.Dispatcher.Invoke(new Action(() =>
+                    {
+                        _currentVinSeekTab.PacketList.Add(packet);
+                    }));
+                }
+            }
+            else if (tcpConnection.RemotePort.ToString() == "27005") // TODO: Figure out packet format of these
+            {
+                var buffer = new byte[data.Length];
+                Buffer.BlockCopy(data, 0, buffer, 0, data.Length);
                 string timestamp = DateTime.Now.ToString("hh:mm:ss.fff");
-                var packet = new VindictusPacket(completedBuffer, timestamp, "S");
-                Debug.WriteLine("Packet: Opcode {0}. Length {1}", packet.Opcode, packet.PacketLength);
-                _currentVinSeekTab.Dispatcher.Invoke(new Action(() => {
+                var packet = new VindictusPacket(buffer, timestamp, "S", "27005", 0);
+                _currentVinSeekTab.Dispatcher.Invoke(new Action(() =>
+                {
                     _currentVinSeekTab.PacketList.Add(packet);
                 }));
             }
+            else
+                return;
         }
 
         private void DataSent(string connection, TCPConnection tcpConnection, byte[] data)
         {
-            if (tcpConnection.RemotePort.ToString() != "27015") // display filter
-                return;
-
-            var completedBuffer = ReassemblerClient.AnalyzePacket(data);
-
-            if (completedBuffer != null)
+            // 27015 = world, 2023 = channel, 27005 = dungeon, 27009 = PN
+            if (tcpConnection.RemotePort.ToString() == "27015")
             {
+                var completedBuffer = _packetHandlerClientWorld.AnalyzePacket(data, true);
+                if (completedBuffer != null)
+                {
+                    string timestamp = DateTime.Now.ToString("hh:mm:ss.fff");
+                    var packet = new VindictusPacket(completedBuffer, timestamp, "C", "27015");
+                    _currentVinSeekTab.Dispatcher.Invoke(new Action(() =>
+                    {
+                        _currentVinSeekTab.PacketList.Add(packet);
+                    }));
+                }
+            }
+            else if (tcpConnection.RemotePort.ToString() == "27023") //TODO: Figure out why channel server packet is not encrypted
+            {
+                var buffer = new byte[data.Length];
+                Buffer.BlockCopy(data, 0, buffer, 0, data.Length);
+                var completedBuffer = _packetHandlerClientChannel.AnalyzePacket(buffer, false);
+                if (completedBuffer != null)
+                {
+                    string timestamp = DateTime.Now.ToString("hh:mm:ss.fff");
+                    var packet = new VindictusPacket(completedBuffer, timestamp, "C", "27023");
+                    _currentVinSeekTab.Dispatcher.Invoke(new Action(() =>
+                    {
+                        _currentVinSeekTab.PacketList.Add(packet);
+                    }));
+                }
+            }
+            else if (tcpConnection.RemotePort.ToString() == "27005") // TODO: Figure out packet format of these
+            {
+                var buffer = new byte[data.Length];
+                Buffer.BlockCopy(data, 0, buffer, 0, data.Length);
                 string timestamp = DateTime.Now.ToString("hh:mm:ss.fff");
-                var packet = new VindictusPacket(completedBuffer, timestamp, "C");
-                Debug.WriteLine("Packet: Opcode {0}. Length {1}", packet.Opcode, packet.PacketLength);
-                _currentVinSeekTab.Dispatcher.Invoke(new Action(() => {
+                var packet = new VindictusPacket(buffer, timestamp, "C", "27005", 0);
+                _currentVinSeekTab.Dispatcher.Invoke(new Action(() =>
+                {
                     _currentVinSeekTab.PacketList.Add(packet);
                 }));
             }
+            else
+                return;
         }
     }
 }

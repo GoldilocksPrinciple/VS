@@ -81,6 +81,7 @@
                             </ListView.Resources>
                             <ListView.View>
                                 <GridView>
+                                    <GridViewColumn Header="Port" Width="60" DisplayMemberBinding="{Binding ServerPort}" />
                                     <GridViewColumn Header="Opcode" Width="45" DisplayMemberBinding="{Binding Opcode}" />
                                     <GridViewColumn Header="Packet Name" Width="180" DisplayMemberBinding="{Binding PacketName}"/>
                                     <GridViewColumn Header="Length" Width="80" DisplayMemberBinding="{Binding PacketLength}" />

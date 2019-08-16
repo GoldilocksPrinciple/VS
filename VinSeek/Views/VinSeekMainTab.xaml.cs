@@ -78,9 +78,7 @@ namespace VinSeek.Views
                 _captureWorker.Stop();
                 _captureThread.Join();
             }
-
-            _captureWorker.ReassemblerServer.Dispose();
-            _captureWorker.ReassemblerClient.Dispose();
+            
             _captureWorker = null;
 
             Dispatcher.Invoke((Action)(() =>
@@ -164,7 +162,7 @@ namespace VinSeek.Views
                         Dispatcher.Invoke((Action)(() =>
                         {
                             var data = File.ReadAllBytes(dialog.FileName);
-                            var pack = new VindictusPacket(data, timestamp, "");
+                            var pack = new VindictusPacket(data, timestamp, "", "");
                             this.PacketList.Add(pack);
                         }));
                         dialog.Dispose();
@@ -211,7 +209,7 @@ namespace VinSeek.Views
                 var capture = XMLImporter.LoadCapture(path);
                 foreach (var packet in capture.Packets)
                 {
-                    var vindiPacket = new VindictusPacket(packet.Buffer, packet.Time, packet.Direction);
+                    var vindiPacket = new VindictusPacket(packet.Buffer, packet.Time, packet.Direction, packet.ServerPort);
                     this.PacketList.Add(vindiPacket);
                 }
             }

@@ -8,6 +8,6 @@ namespace VinSeek.Utilities
 {
     public class PacketFilter
     {
-
+        // TODO: So many information, packet filter when?
     }
 }
