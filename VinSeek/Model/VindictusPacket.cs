@@ -15,10 +15,12 @@ namespace VinSeek.Model
     public class VindictusPacket : INotifyPropertyChanged
     {
         private string _note;
-        
+
+        public string Time { get; set; }
+
         public string Direction { get; set; }
         
-        public string Time { get; set; }
+        public string ServerPort { get; set; }
         
         public string PacketName { get; set; }
 
@@ -93,49 +95,80 @@ namespace VinSeek.Model
         /// </summary>
         public VindictusPacket()
         {
-            this.PacketName = String.Empty;
+            this.PacketName = string.Empty;
         }
 
         /// <summary>
-        /// Create a new vindictus packet
+        /// Constructor for unknown packet
+        /// </summary>
+        /// <param name="buffer"></param>
+        /// <param name="time"></param>
+        /// <param name="direction"></param>
+        /// <param name="serverPort"></param>
+        /// <param name="opcode"></param>
+        public VindictusPacket(byte[] buffer, string time, string direction, string serverPort, int opcode)
+        {
+            this.Buffer = buffer;
+            this.Direction = direction;
+            this.ServerPort = serverPort;
+            this.Opcode = opcode;
+            this.PacketName = "DUNGEON_SERVER";
+        }
+
+        /// <summary>
+        /// Constructor for world server packet
         /// </summary>
         /// <param name="buffer">buffer</param>
         /// <param name="time">buffer received timestamp</param>
-        /// <param name="flag">flag indicate if buffer contains packet direction information</param>
-        public VindictusPacket(byte[] buffer, string time, string direction)
+        /// <param name="direction">packet direction</param>
+        /// <param name="serverPort">server port that the packet was sent to</param>
+        public VindictusPacket(byte[] buffer, string time, string direction, string serverPort)
         {
             this.Buffer = buffer;
             this.Time = time;
             this.Direction = direction;
-            this.OpcodeBytesCount = Util.GetBytesCount(Buffer, 8);
-            this.Opcode = Util.GetInt32(Buffer, 8);
-            this.LengthBytesCount = Util.GetBytesCount(Buffer, 8 + OpcodeBytesCount);
-            this.Length = Util.GetInt32(Buffer, LengthBytesCount);
-            this.PacketOffset = 8 + OpcodeBytesCount + LengthBytesCount;
-
-            if (this.Opcode == 0)
+            this.ServerPort = serverPort;
+            try
             {
-                var guidBytes = new byte[16];
-                System.Buffer.BlockCopy(this.Buffer, this.PacketOffset, guidBytes, 0, 16);
-                this.Guid = BitConverter.ToString(guidBytes).Replace("-", string.Empty);
-                foreach (KeyValuePair<string, int> item in PacketIdentifier.Guids)
+                this.OpcodeBytesCount = Util.GetBytesCount(Buffer, sizeof(long));
+                this.Opcode = Util.GetInt32(Buffer, sizeof(long));
+                this.LengthBytesCount = Util.GetBytesCount(Buffer, sizeof(long) + OpcodeBytesCount);
+                this.Length = Util.GetInt32(Buffer, LengthBytesCount);
+                this.PacketOffset = sizeof(long) + OpcodeBytesCount + LengthBytesCount;
+
+                if (this.Opcode == 0)
                 {
-                    if (this.Guid == item.Key)
-                        this.Opcode = item.Value;
+                    var guidBytes = new byte[16];
+                    System.Buffer.BlockCopy(this.Buffer, this.PacketOffset, guidBytes, 0, 16);
+                    this.Guid = BitConverter.ToString(guidBytes).Replace("-", string.Empty);
+                    foreach (KeyValuePair<string, int> item in PacketIdentifier.Guids)
+                    {
+                        if (this.Guid == item.Key)
+                            this.Opcode = item.Value;
+                    }
+                }
+                else
+                    this.Guid = string.Empty;
+
+                if (this.ServerPort == "27023")
+                    this.PacketName = "CHANNEL_SERVER";
+                else
+                {
+                    this.PacketName = "UNKNOWN";
+                    foreach (var knownOpcode in Enum.GetValues(typeof(PacketIdentifier.Opcodes)))
+                    {
+                        if (Opcode == (int)knownOpcode)
+                        {
+                            var pName = (PacketIdentifier.Opcodes)knownOpcode;
+                            this.PacketName = pName.ToString();
+                            break;
+                        }
+                    }
                 }
             }
-            else
-                this.Guid = string.Empty;
-
-            this.PacketName = "UNKNOWN";
-            foreach (var knownOpcode in Enum.GetValues(typeof(PacketIdentifier.Opcodes)))
+            catch (Exception ex)
             {
-                if (Opcode == (int)knownOpcode)
-                {
-                    var pName = (PacketIdentifier.Opcodes)knownOpcode;
-                    this.PacketName = pName.ToString();
-                    break;
-                }
+                throw ex;
             }
         }
     }
