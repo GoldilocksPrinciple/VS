@@ -17,6 +17,7 @@ using System.Reflection;
 using System.Windows.Interop;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Media;
 
 namespace VinSeek.Views
 {
@@ -27,15 +28,16 @@ namespace VinSeek.Views
     {
         private MainWindow _mainWindow = System.Windows.Application.Current.MainWindow as MainWindow;
         public ObservableCollection<VindictusPacket> PacketList;
+        private PacketFilter _packetFilter;
         private MachinaWorker _captureWorker;
         private Thread _captureThread;
 
         public VinSeekMainTab()
         {
             InitializeComponent();
-
             this.PacketList = new ObservableCollection<VindictusPacket>();
-            PacketListView.ItemsSource = PacketList;
+            PacketListView.ItemsSource = this.PacketList;
+            _packetFilter = new PacketFilter(this, this.PacketList);
         }
 
         #region Capture
@@ -48,7 +50,8 @@ namespace VinSeek.Views
                 return;
 
             this.PacketList = new ObservableCollection<VindictusPacket>();
-            PacketListView.ItemsSource = PacketList;
+            PacketListView.ItemsSource = this.PacketList;
+            _packetFilter = new PacketFilter(this, this.PacketList);
 
             _captureWorker = new MachinaWorker(this);
             _captureThread = new Thread(_captureWorker.Start);
@@ -150,6 +153,9 @@ namespace VinSeek.Views
         /// <param name="e"></param>
         private void ImportPacket_Click(object sender, RoutedEventArgs e)
         {
+            if (_captureWorker != null)
+                return;
+
             Dispatcher.Invoke((Action)(() =>
             {
                 using (CommonOpenFileDialog dialog = new CommonOpenFileDialog { IsFolderPicker = false })
@@ -189,7 +195,7 @@ namespace VinSeek.Views
 
             Dispatcher.Invoke((Action)(() =>
             {
-                PacketList[index].Note = new EditNoteView(PacketList[index].Note,
+                PacketList[index].Comment = new EditNoteView(PacketList[index].Comment,
                     "Enter text to edit comment/note for this packet. Click OK to save changes.").ShowDialog();
             }));
         }
@@ -202,8 +208,6 @@ namespace VinSeek.Views
         /// <param name="path">path to capture file to load</param>
         public void LoadCapture(string path)
         {
-            this.PacketList = new ObservableCollection<VindictusPacket>();
-            PacketListView.ItemsSource = PacketList;
             try
             {
                 var capture = XMLImporter.LoadCapture(path);
@@ -251,6 +255,61 @@ namespace VinSeek.Views
 
         #endregion
 
+        #region Packet Filter
+        /// <summary>
+        /// Clear watermark text and change font color when first click on packet filter box
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void FilterBox_PreviewMouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (FilterBox.Text == "Apply a filter...")
+            {
+                Dispatcher.Invoke((Action)(() =>
+                {
+                    FilterBox.Text = "";
+                    FilterBox.Foreground = new SolidColorBrush(Colors.Black);
+                }));
+            }
+        }
+
+        /// <summary>
+        /// Click event handler for SET button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Set_Click(object sender, RoutedEventArgs e)
+        {
+            Dispatcher.Invoke((Action)(() =>
+            {
+                FilterBox.Background = new SolidColorBrush(Colors.LightGreen);
+            }));
+            var filterText = FilterBox.Text;
+            if (filterText != null)
+            {
+                _packetFilter.SetFilter(filterText);
+            }
+            else
+                PacketListView.ItemsSource = this.PacketList;
+        }
+
+        /// <summary>
+        /// Click event handler for CLEAR Button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Clear_Click(object sender, RoutedEventArgs e)
+        {
+            Dispatcher.Invoke((Action)(() =>
+            {
+                FilterBox.Text = "Apply a filter...";
+                FilterBox.Foreground = new SolidColorBrush(Colors.Gray);
+                FilterBox.Background = new SolidColorBrush(Colors.White);
+            }));
+            PacketListView.ItemsSource = this.PacketList;
+        }
+        #endregion
+
         #region Hexbox
         /// <summary>
         /// Update hexbox using read all bytes from a file
@@ -272,15 +331,27 @@ namespace VinSeek.Views
         #endregion
 
         /// <summary>
-        /// Update capture info
+        /// Update capture status info
         /// </summary>
         /// <param name="text"></param>
-        public void UpdateCaptureProcessInfo(string text)
+        public void UpdateCaptureProcessInfo(string text, bool green)
         {
-            Dispatcher.Invoke((Action)(() =>
+            if (green)
             {
-                CaptureStatusInfo.Text = text;
-            }));
+                Dispatcher.Invoke((Action)(() =>
+                {
+                    CaptureStatusInfo.Text = text;
+                    CaptureStatusInfo.Foreground = new SolidColorBrush(Colors.LimeGreen);
+                }));
+            }
+            else
+            {
+                Dispatcher.Invoke((Action)(() =>
+                {
+                    CaptureStatusInfo.Text = text;
+                    CaptureStatusInfo.Foreground = new SolidColorBrush(Colors.Red);
+                }));
+            }
         }
 
         /// <summary>

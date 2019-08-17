@@ -34,8 +34,12 @@
                         </Grid.RowDefinitions>
                         <DockPanel Grid.Row="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch">
                             <Grid DockPanel.Dock="Right" Height="30" VerticalAlignment="Top">
-                                <TextBlock x:Name="CaptureStatusInfo" Margin="0,1,80,0" TextAlignment="Center" Text="" Background="White" HorizontalAlignment="Right" Width="250"/>
-                                <!--<xctk:WatermarkTextBox x:Name="FilterEntry" Watermark="Apply a filter ..." HorizontalAlignment="Left" Width="500" TextWrapping="Wrap" VerticalAlignment="Top" AutomationProperties.Name="FilterBox"/>-->
+                                <TextBlock x:Name="CaptureStatusInfo" Margin="0,1,50,0" TextAlignment="Center" Text="" Background="White" HorizontalAlignment="Right" Width="250"/>
+                                <Grid Grid.Column="1" HorizontalAlignment="Left" Width="550">
+                                    <TextBox x:Name="FilterBox" Foreground="Gray" PreviewMouseLeftButtonDown="FilterBox_PreviewMouseLeftButtonDown" TextWrapping="NoWrap" VerticalAlignment="Top">Apply a filter...</TextBox>
+                                    <Button x:Name="Set" Content="Set" HorizontalAlignment="Right" Width="40" Margin="0,0,50,12" Click="Set_Click"/>
+                                    <Button x:Name="Clear" Content="Clear" HorizontalAlignment="Right" Width="50" Margin="0,0,0,12" Click="Clear_Click"/>
+                                </Grid>
                             </Grid>
                         </DockPanel>
                         <ListView x:Name="PacketListView" Margin="0,20,0,0" Grid.ColumnSpan="2" SelectionChanged="PacketListView_SelectionChanged">
@@ -81,14 +85,14 @@
                             </ListView.Resources>
                             <ListView.View>
                                 <GridView>
-                                    <GridViewColumn Header="Port" Width="60" DisplayMemberBinding="{Binding ServerPort}" />
+                                    <GridViewColumn Header="Port" Width="55" DisplayMemberBinding="{Binding ServerPort}" />
                                     <GridViewColumn Header="Opcode" Width="45" DisplayMemberBinding="{Binding Opcode}" />
                                     <GridViewColumn Header="Packet Name" Width="180" DisplayMemberBinding="{Binding PacketName}"/>
                                     <GridViewColumn Header="Length" Width="80" DisplayMemberBinding="{Binding PacketLength}" />
                                     <GridViewColumn Header="Offset" Width="40" DisplayMemberBinding="{Binding PacketOffset}" />
                                     <GridViewColumn Header="GUID" Width="240" DisplayMemberBinding="{Binding Guid}" />
                                     <GridViewColumn Header="Time" Width="80" DisplayMemberBinding="{Binding Time}"/>
-                                    <GridViewColumn Header="Comment" Width="200" DisplayMemberBinding="{Binding Note}"/>
+                                    <GridViewColumn Header="Comment" Width="200" DisplayMemberBinding="{Binding Comment}"/>
                                 </GridView>
                                 <!--<GridView>
                                     <GridViewColumn Header="Opcode" Width="120" />

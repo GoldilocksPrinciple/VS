@@ -47,14 +47,14 @@ namespace VinSeek.Network
                         _processId = (uint)heroesProcess[0].Id;
 
                     string info = "Listening for connection of Process [" + _processId.ToString() + "]";
-                    _currentVinSeekTab.UpdateCaptureProcessInfo(info);
+                    _currentVinSeekTab.UpdateCaptureProcessInfo(info, true);
                     foundProcessId = true;
                     break;
                 }
                 else
                 {
                     string info = "No Vindictus process found";
-                    _currentVinSeekTab.UpdateCaptureProcessInfo(info);
+                    _currentVinSeekTab.UpdateCaptureProcessInfo(info, false);
                 }
             }
 
@@ -83,10 +83,16 @@ namespace VinSeek.Network
         public void Stop()
         {
             _stopCapturing = true;
+
+            _packetHandlerServerWorld.Dispose();
+            _packetHandlerClientWorld.Dispose();
+            _packetHandlerServerChannel.Dispose();
+            _packetHandlerClientChannel.Dispose();
+
             if (foundProcessId)
             {
                 string info = "Listener stopped for Process [" + _processId.ToString() + "]";
-                _currentVinSeekTab.UpdateCaptureProcessInfo(info);
+                _currentVinSeekTab.UpdateCaptureProcessInfo(info, false);
             }
         }
 
