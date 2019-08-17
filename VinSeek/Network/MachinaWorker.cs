@@ -102,7 +102,7 @@ namespace VinSeek.Network
 
         private void DataReceived(string connection, TCPConnection tcpConnection, byte[] data)
         {
-            // 27015 = world, 2023 = channel, 27005 = dungeon, 27009 = PN
+            // 27015 = world, 2023 = channel, 27005 = dungeon, 27009 = pingservice
             if (tcpConnection.RemotePort.ToString() == "27015")
             {
                 var buffer = new byte[data.Length];
@@ -150,7 +150,7 @@ namespace VinSeek.Network
 
         private void DataSent(string connection, TCPConnection tcpConnection, byte[] data)
         {
-            // 27015 = world, 2023 = channel, 27005 = dungeon, 27009 = PN
+            // 27015 = world, 2023 = channel, 27005 = dungeon, 27009 = pingservice
             if (tcpConnection.RemotePort.ToString() == "27015")
             {
                 var completedBuffer = _packetHandlerClientWorld.AnalyzePacket(data, true);
@@ -164,7 +164,7 @@ namespace VinSeek.Network
                     }));
                 }
             }
-            else if (tcpConnection.RemotePort.ToString() == "27023") //TODO: Figure out why channel server packet is not encrypted
+            else if (tcpConnection.RemotePort.ToString() == "27023")
             {
                 var buffer = new byte[data.Length];
                 Buffer.BlockCopy(data, 0, buffer, 0, data.Length);

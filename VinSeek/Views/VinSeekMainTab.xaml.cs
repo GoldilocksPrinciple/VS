@@ -18,6 +18,7 @@ using System.Windows.Interop;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Media;
+using System.Windows.Input;
 
 namespace VinSeek.Views
 {
@@ -262,6 +263,24 @@ namespace VinSeek.Views
 
         #region Packet Filter
         /// <summary>
+        /// Packet filter method
+        /// </summary>
+        private void FilterPacket()
+        {
+            Dispatcher.Invoke((Action)(() =>
+            {
+                FilterBox.Background = new SolidColorBrush(Colors.LightGreen);
+            }));
+            var filterText = FilterBox.Text;
+            if (filterText != null)
+            {
+                _packetFilter.SetFilter(filterText);
+            }
+            else
+                PacketListView.ItemsSource = this.PacketList;
+        }
+
+        /// <summary>
         /// Clear watermark text and change font color when first click on packet filter box
         /// </summary>
         /// <param name="sender"></param>
@@ -277,6 +296,15 @@ namespace VinSeek.Views
                 }));
             }
         }
+        
+        private void FilterBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                e.Handled = true;
+                this.FilterPacket();
+            }
+        }
 
         /// <summary>
         /// Click event handler for SET button
@@ -285,17 +313,7 @@ namespace VinSeek.Views
         /// <param name="e"></param>
         private void Set_Click(object sender, RoutedEventArgs e)
         {
-            Dispatcher.Invoke((Action)(() =>
-            {
-                FilterBox.Background = new SolidColorBrush(Colors.LightGreen);
-            }));
-            var filterText = FilterBox.Text;
-            if (filterText != null)
-            {
-                _packetFilter.SetFilter(filterText);
-            }
-            else
-                PacketListView.ItemsSource = this.PacketList;
+            this.FilterPacket();
         }
 
         /// <summary>
@@ -313,6 +331,7 @@ namespace VinSeek.Views
             }));
             PacketListView.ItemsSource = this.PacketList;
         }
+        
         #endregion
 
         #region Hexbox
@@ -363,13 +382,13 @@ namespace VinSeek.Views
         /// Update hexbox using correct buffer of selected packet in PacketListView
         /// </summary>
         /// <param name="index">index of selected item</param>
-        public void UpdateSelectedItemHexBox(int index)
+        public void UpdateSelectedItemHexBox(object item)
         {
-            if (index == -1)
+            if (item == null)
                 return;
 
-            var data = PacketList[index].Buffer;
-            this.LoadDataFromStream(data);
+            var packet = item as VindictusPacket;
+            this.LoadDataFromStream(packet.Buffer);
         }
 
         /// <summary>
@@ -383,8 +402,8 @@ namespace VinSeek.Views
             {
                 if (this.PacketList.Count == 0)
                     return;
-
-                this.UpdateSelectedItemHexBox(PacketListView.SelectedIndex);
+                
+                this.UpdateSelectedItemHexBox(PacketListView.SelectedItem);
             }));
         }
 

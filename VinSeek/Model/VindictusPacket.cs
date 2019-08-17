@@ -103,6 +103,7 @@ namespace VinSeek.Model
         public VindictusPacket(byte[] buffer, string time, string direction, string serverPort, int opcode)
         {
             this.Buffer = buffer;
+            this.Time = time;
             this.Direction = direction;
             this.ServerPort = serverPort;
             this.Opcode = opcode;
