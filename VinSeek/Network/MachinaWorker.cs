@@ -20,14 +20,18 @@ namespace VinSeek.Network
         private bool _stopCapturing;
         private uint _processId;
         public bool foundProcessId = false;
-        private static PacketHandler _packetHandlerServerWorld = new PacketHandler(true, new Transformer());
-        private PacketHandler _packetHandlerServerChannel = new PacketHandler(false, null);
-        private static PacketHandler _packetHandlerClientWorld = new PacketHandler(true, new Transformer());
-        private PacketHandler _packetHandlerClientChannel = new PacketHandler(false, null);
+        private static PacketHandler _packetHandlerServerWorld;
+        private PacketHandler _packetHandlerServerChannel;
+        private static PacketHandler _packetHandlerClientWorld;
+        private PacketHandler _packetHandlerClientChannel;
 
         public MachinaWorker(VinSeekMainTab currentTab)
         {
             this._currentVinSeekTab = currentTab;
+            _packetHandlerServerWorld = new PacketHandler(true, new Transformer());
+            _packetHandlerServerChannel = new PacketHandler(false, null);
+            _packetHandlerClientWorld = new PacketHandler(true, new Transformer());
+            _packetHandlerClientChannel = new PacketHandler(false, null);
         }
 
         public void Start()
@@ -114,7 +118,7 @@ namespace VinSeek.Network
                     }));
                 }
             }
-            else if (tcpConnection.RemotePort.ToString() == "27023") //TODO: Figure out if channel server packets is not encrypted or not
+            else if (tcpConnection.RemotePort.ToString() == "27023")
             {
                 var buffer = new byte[data.Length];
                 Buffer.BlockCopy(data, 0, buffer, 0, data.Length);

@@ -93,7 +93,7 @@ namespace VinSeek.Model
         }
 
         /// <summary>
-        /// Constructor for unknown packet
+        /// Constructor for dungeon packet
         /// </summary>
         /// <param name="buffer"></param>
         /// <param name="time"></param>

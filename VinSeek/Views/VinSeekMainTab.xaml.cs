@@ -213,7 +213,12 @@ namespace VinSeek.Views
                 var capture = XMLImporter.LoadCapture(path);
                 foreach (var packet in capture.Packets)
                 {
-                    var vindiPacket = new VindictusPacket(packet.Buffer, packet.Time, packet.Direction, packet.ServerPort);
+                    VindictusPacket vindiPacket;
+                    if (packet.PacketName == "DUNGEON_SERVER")
+                        vindiPacket = new VindictusPacket(packet.Buffer, packet.Time, packet.Direction, packet.ServerPort, 0);
+                    else
+                        vindiPacket = new VindictusPacket(packet.Buffer, packet.Time, packet.Direction, packet.ServerPort);
+
                     this.PacketList.Add(vindiPacket);
                 }
             }
