@@ -14,7 +14,7 @@ namespace VinSeek.Model
 {
     public class VindictusPacket : INotifyPropertyChanged
     {
-        private string _note;
+        private string _comment;
 
         public string Time { get; set; }
 
@@ -40,13 +40,7 @@ namespace VinSeek.Model
         }
 
         [XmlIgnore]
-        public int OpcodeBytesCount { get; private set; }
-
-        [XmlIgnore]
         public int Opcode { get; private set; }
-
-        [XmlIgnore]
-        public int LengthBytesCount { get; private set; }
 
         [XmlIgnore]
         public int Length { get; private set; }
@@ -70,14 +64,14 @@ namespace VinSeek.Model
         }
 
         [XmlIgnore]
-        public string Note
+        public string Comment
         {
-            get { return _note; }
+            get { return _comment; }
             set
             {
-                if (_note != value)
+                if (_comment != value)
                 {
-                    _note = value;
+                    _comment = value;
                     this.OnPropertyChanged("Note");
                 }
             }
@@ -130,11 +124,9 @@ namespace VinSeek.Model
             this.ServerPort = serverPort;
             try
             {
-                this.OpcodeBytesCount = Util.GetBytesCount(Buffer, sizeof(long));
-                this.Opcode = Util.GetInt32(Buffer, sizeof(long));
-                this.LengthBytesCount = Util.GetBytesCount(Buffer, sizeof(long) + OpcodeBytesCount);
-                this.Length = Util.GetInt32(Buffer, LengthBytesCount);
-                this.PacketOffset = sizeof(long) + OpcodeBytesCount + LengthBytesCount;
+                this.Opcode = Util.ReadVarInt(Buffer, sizeof(long), out int opcodeBytesCount);
+                this.Length = Util.ReadVarInt(Buffer, sizeof(long) + opcodeBytesCount, out int lengthBytesCount);
+                this.PacketOffset = sizeof(long) + opcodeBytesCount + lengthBytesCount;
 
                 if (this.Opcode == 0)
                 {

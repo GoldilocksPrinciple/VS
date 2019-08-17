@@ -9,7 +9,7 @@ using VinSeek.Utilities;
 
 namespace VinSeek.Network
 {
-    public class PacketHandler
+    public class PacketHandler : IDisposable
     {
         private byte[] _buffer;
         private byte[] _packetBuffer;
@@ -135,9 +135,8 @@ namespace VinSeek.Network
         {
             try
             {
-                var opcodeBytesCount = Util.GetBytesCount(buffer, sizeof(long));
-                var lengthBytesCount = Util.GetBytesCount(buffer, sizeof(long) + opcodeBytesCount);
-                var packetBodyLength = Util.GetInt32(buffer, sizeof(long) + opcodeBytesCount);
+                var opcodeBytesCount = Util.ReadBytesCount(buffer, sizeof(long));
+                var packetBodyLength = Util.ReadVarInt(buffer, sizeof(long) + opcodeBytesCount, out int lengthBytesCount);
                 var packetLength = sizeof(long) + opcodeBytesCount + lengthBytesCount + packetBodyLength;
                 return packetLength;
             }
@@ -145,6 +144,14 @@ namespace VinSeek.Network
             {
                 throw ex;
             }
+        }
+
+        public void Dispose()
+        {
+            _buffer = null;
+            _decryptedBuffer = null;
+            _packetBuffer = null;
+            this.HandlerTransformer = null;
         }
     }
 }

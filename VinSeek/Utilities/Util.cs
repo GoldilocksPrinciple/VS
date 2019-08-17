@@ -8,7 +8,7 @@ namespace VinSeek.Utilities
 {
     public class Util
     {
-        public static int GetBytes(int value, byte[] buffer, int index)
+        public static int ReadBytes(int value, byte[] buffer, int index)
         {
             if (value <= 0x7F)
             {
@@ -63,7 +63,7 @@ namespace VinSeek.Utilities
             }
         }
 
-        public static int GetBytesCount(int value)
+        public static int ReadBytesCount(int value)
         {
             if (value <= 0x000007F)
                 return 1;
@@ -83,7 +83,7 @@ namespace VinSeek.Utilities
             return 6;
         }
 
-        public static int GetBytesCount(byte[] buffer, int index)
+        public static int ReadBytesCount(byte[] buffer, int index)
         {
             byte b = buffer[index];
 
@@ -108,84 +108,81 @@ namespace VinSeek.Utilities
             return -1;
         }
         
-        // TODO: Rewrite this mess
-        public static int GetInt32(byte[] bytes, int index)
+        public static int ReadVarInt(byte[] bytes, int index, out int length)
         {
-            byte num1 = bytes[index++];
-            int num2;
-            if ((num1 & 128) == 0)
+            byte b = bytes[index];
+            length = ReadBytesCount(bytes, index);
+            if (length == 1)
             {
-                num2 = num1;
+                return b;
             }
-            else
+            else if (length == 2)
             {
-                int num3;
-                if ((num1 & 224) == 192)
-                {
-                    num3 = num1 << 6 & 1984;
-                }
-                else
-                {
-                    int num4;
-                    if ((num1 & 240) == 224)
-                    {
-                        num4 = num1 << 12 & 61440;
-                    }
-                    else
-                    {
-                        int num5;
-                        if ((num1 & 248) == 240)
-                        {
-                            num5 = num1 << 18 & 1835008;
-                        }
-                        else
-                        {
-                            int num6;
-                            if ((num1 & 252) == 248)
-                            {
-                                num6 = num1 << 24 & 50331648;
-                            }
-                            else
-                            {
-                                if ((num1 & 252) != 252)
-                                    return -1;
-                                int num7 = num1 << 30 & -1073741824;
-                                byte num8 = bytes[index++];
-                                if ((num8 & 192) != 128)
-                                    return -1;
-                                num6 = num7 | num8 << 24 & 1056964608;
-                                if ((uint)num6 <= 67108863U)
-                                    return -1;
-                            }
-                            byte num9 = bytes[index++];
-                            if ((num9 & 192) != 128)
-                                return -1;
-                            num5 = num6 | num9 << 18 & 16515072;
-                            if ((uint)num5 <= 2097151U)
-                                return -1;
-                        }
-                        byte num10 = bytes[index++];
-                        if ((num10 & 192) != 128)
-                            return -1;
-                        num4 = num5 | num10 << 12 & 258048;
-                        if ((uint)num4 <= ushort.MaxValue)
-                            return -1;
-                    }
-                    byte num11 = bytes[index++];
-                    if ((num11 & 192) != 128)
-                        return -1;
-                    num3 = num4 | num11 << 6 & 4032;
-                    if ((uint)num3 <= 2047U)
-                        return -1;
-                }
-                byte num12 = bytes[index++];
-                if ((num12 & 192) != 128)
-                    return -1;
-                num2 = num3 | num12 & 63;
-                if ((uint)num2 <= (uint)sbyte.MaxValue)
-                    return -1;
+                var temp = b;
+                var result = (temp << 6 & 0x7C0);
+
+                temp = bytes[index + 1];
+                result |= (temp & 63);
+
+                return result;
             }
-            return num2;
+            else if (length == 3)
+            {
+                var temp = b;
+                var result = (temp << 12 & 0xF000);
+
+                temp = bytes[index + 1];
+                result |= (temp << 6 & 0xFC0);
+                temp = bytes[index + 2];
+                result |= (temp & 63);
+
+                return result;
+            }
+            else if (length == 4)
+            {
+                var temp = b;
+                var result = (temp << 18 & 0x1C0000);
+
+                temp = bytes[index + 1];
+                result |= (temp << 12 & 0x3F000);
+                temp = bytes[index + 2];
+                result |= (temp << 6 & 0xFC0);
+                temp = bytes[index + 3];
+                result |= (temp & 63);
+
+                return result;
+            }
+            else if (length == 5)
+            {
+                var temp = b;
+                var result = (temp << 24 & 0x3000000);
+
+                temp = bytes[index + 1];
+                result |= (temp << 18 & 0xFC0000);
+                temp = bytes[index + 2];
+                result |= (temp << 12 & 0x3F000);
+                temp = bytes[index + 3];
+                result |= (temp << 6 & 0xFC0);
+                temp = bytes[index + 4];
+                result |= (temp & 63);
+            }
+            else if (length == 6)
+            {
+                var temp = b;
+                var result = (temp << 30 & -0x40000000);
+
+                temp = bytes[index + 1];
+                result |= (temp << 24 & 0x3F000000);
+                temp = bytes[index + 2];
+                result |= (temp << 18 & 0xFC0000);
+                temp = bytes[index + 3];
+                result |= (temp << 12 & 0x3F000);
+                temp = bytes[index + 4];
+                result |= (temp << 6 & 0xFC0);
+                temp = bytes[index + 5];
+                result |= (temp & 63);
+            }
+            return -1;
         }
 
         public static string ByteArrayToString(byte[] ba)
