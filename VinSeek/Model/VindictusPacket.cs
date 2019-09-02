@@ -17,9 +17,9 @@ namespace VinSeek.Model
 
         [XmlIgnore]
         public string Direction { get; set; }
-        
+
         public string Time { get; set; }
-        
+
         public string PacketName { get; set; }
 
         [XmlIgnore]
@@ -30,7 +30,7 @@ namespace VinSeek.Model
 
         [XmlElement(ElementName = "Buffer")]
         public string BufferString { get; set; }
-        
+
         [XmlIgnore]
         public int PacketLength
         {
@@ -134,56 +134,25 @@ namespace VinSeek.Model
                 var guidBytes = new byte[16];
                 System.Buffer.BlockCopy(this.Buffer, this.PacketOffset, guidBytes, 0, 16);
                 this.Guid = BitConverter.ToString(guidBytes).Replace("-", string.Empty);
+                foreach (KeyValuePair<string, int> item in PacketIdentifier.Guids)
+                {
+                    if (this.Guid == item.Key)
+                        this.Opcode = item.Value;
+                }
             }
             else
                 this.Guid = string.Empty;
 
             this.PacketName = "UNKNOWN";
-            foreach (var knownOpcode in Enum.GetValues(typeof(KnownOpcodes)))
+            foreach (var knownOpcode in Enum.GetValues(typeof(PacketIdentifier.Opcodes)))
             {
                 if (Opcode == (int)knownOpcode)
                 {
-                    var pName = (KnownOpcodes)knownOpcode;
+                    var pName = (PacketIdentifier.Opcodes)knownOpcode;
                     this.PacketName = pName.ToString();
                     break;
                 }
             }
         }
-
-        #region Opcodes
-        enum KnownOpcodes
-        {
-            CM_CHAR_NAME_CHECK = 456,
-            CM_ENTER_TOWN = 464,
-            CM_CLIENT_INFO = 526,
-            CM_VERIFY_PIN = 586,
-            CM_LOGIN_REQUEST = 659,
-            CM_SELECT_CHARACTER = 662,
-            CM_CREATE_CHARACTER = 663,
-            CM_REQUEST_CHAR_INFO = 716,
-            CM_SET_PIN = 766,
-            SM_REQUEST_PIN = 420,
-            SM_CASH_SHOP_CASH = 436,
-            SM_CASH_SHOP_PRODUCTS = 440,
-            SM_CASH_SHOP_SECTIONS = 441,
-            SM_GAME_ENV = 522,
-            SM_HAS_PIN = 594,
-            SM_CHARACTER_OUTFIT = 627,
-            SM_CHARACTER_LIST = 661,
-            SM_LOGIN_SUCCESS = 664,
-            SM_CHARACTER_MAILBOX = 681,
-            SM_NPC_LOCATIONS = 693,
-            SM_NPC_DIALOGUE = 694,
-            SM_QUEST_STATUS = 735,
-            SM_CHARACTER_QUICK_SLOTS = 741,
-            SM_PIN_RESULT = 756,
-            SM_CHARACTER_SP_SKILL = 780,
-            SM_CHARACTER_STATUS_EFFECTS = 792,
-            SM_STORY_STATUS = 794,
-            SM_SYSTEM_MSG = 798,
-            SM_CHARACTER_INFO = 800,
-            SM_CHARACTER_STATS = 810,
-        }
-        #endregion
     }
 }
