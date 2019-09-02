@@ -119,7 +119,7 @@ namespace VinSeek.Views
                 {
                     if (exportDiag.ShowDialog() == CommonFileDialogResult.Ok)
                     {
-                        File.WriteAllBytes(exportDiag.FileName, packet.Buffer);
+                        File.WriteAllBytes(exportDiag.FileName, packet.Body);
                         System.Windows.MessageBox.Show($"Packet successfully saved to {exportDiag.FileName}.", "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
                         exportDiag.Dispose();
                     }
