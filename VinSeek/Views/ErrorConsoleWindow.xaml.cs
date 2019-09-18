@@ -17,9 +17,9 @@ namespace VinSeek.Views
     /// <summary>
     /// Interaction logic for ErrorConsoleView.xaml
     /// </summary>
-    public partial class ErrorConsoleView : Window
+    public partial class ErrorConsoleWindow : Window
     {
-        public ErrorConsoleView()
+        public ErrorConsoleWindow()
         {
             InitializeComponent();
             
@@ -30,7 +30,7 @@ namespace VinSeek.Views
         /// </summary>
         /// <param name="message">displayed error message</param>
         /// <param name="title">window's custom title</param>
-        public ErrorConsoleView(string message, string title)
+        public ErrorConsoleWindow(string message, string title)
         {
             this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
             InitializeComponent();
@@ -44,7 +44,7 @@ namespace VinSeek.Views
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+        private void ButtonOk_OnClick(object sender, RoutedEventArgs e)
         {
             this.Close();
         }

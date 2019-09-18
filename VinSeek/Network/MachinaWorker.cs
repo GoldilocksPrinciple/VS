@@ -21,17 +21,13 @@ namespace VinSeek.Network
         private uint _processId;
         public bool foundProcessId = false;
         private static PacketHandler _packetHandlerServerWorld;
-        private PacketHandler _packetHandlerServerChannel;
         private static PacketHandler _packetHandlerClientWorld;
-        private PacketHandler _packetHandlerClientChannel;
 
         public MachinaWorker(VinSeekMainTab currentTab)
         {
-            this._currentVinSeekTab = currentTab;
-            _packetHandlerServerWorld = new PacketHandler(true, new Transformer());
-            _packetHandlerServerChannel = new PacketHandler(false, null);
-            _packetHandlerClientWorld = new PacketHandler(true, new Transformer());
-            _packetHandlerClientChannel = new PacketHandler(false, null);
+            _currentVinSeekTab = currentTab;
+            _packetHandlerServerWorld = new PacketHandler(_currentVinSeekTab, "S");
+            _packetHandlerClientWorld = new PacketHandler(_currentVinSeekTab, "C");
         }
 
         public void Start()
@@ -74,7 +70,7 @@ namespace VinSeek.Network
                                         => DataSent(connection, tcpConnection, data);
 
                 monitor.Start();
-
+                
                 while (!_stopCapturing)
                 {
                     Thread.Sleep(1);
@@ -87,12 +83,7 @@ namespace VinSeek.Network
         public void Stop()
         {
             _stopCapturing = true;
-
-            _packetHandlerServerWorld.Dispose();
-            _packetHandlerClientWorld.Dispose();
-            _packetHandlerServerChannel.Dispose();
-            _packetHandlerClientChannel.Dispose();
-
+            
             if (foundProcessId)
             {
                 string info = "Listener stopped for Process [" + _processId.ToString() + "]";
@@ -102,38 +93,14 @@ namespace VinSeek.Network
 
         private void DataReceived(string connection, TCPConnection tcpConnection, byte[] data)
         {
-            // 27015 = world, 2023 = channel, 27005 = dungeon, 27009 = pingservice
+            // 27015 = world, 27005 = dungeon
             if (tcpConnection.RemotePort.ToString() == "27015")
             {
                 var buffer = new byte[data.Length];
                 Buffer.BlockCopy(data, 0, buffer, 0, data.Length);
-                var completedBuffer = _packetHandlerServerWorld.AnalyzePacket(buffer, true);
-                if (completedBuffer != null)
-                {
-                    string timestamp = DateTime.Now.ToString("hh:mm:ss.fff");
-                    var packet = new VindictusPacket(completedBuffer, timestamp, "S", "27015");
-                    _currentVinSeekTab.Dispatcher.Invoke(new Action(() =>
-                    {
-                        _currentVinSeekTab.PacketList.Add(packet);
-                    }));
-                }
+                _packetHandlerServerWorld.AnalyzePacket(buffer, true);
             }
-            else if (tcpConnection.RemotePort.ToString() == "27023")
-            {
-                var buffer = new byte[data.Length];
-                Buffer.BlockCopy(data, 0, buffer, 0, data.Length);
-                var completedBuffer = _packetHandlerServerChannel.AnalyzePacket(buffer, false);
-                if (completedBuffer != null)
-                {
-                    string timestamp = DateTime.Now.ToString("hh:mm:ss.fff");
-                    var packet = new VindictusPacket(completedBuffer, timestamp, "S", "27023");
-                    _currentVinSeekTab.Dispatcher.Invoke(new Action(() =>
-                    {
-                        _currentVinSeekTab.PacketList.Add(packet);
-                    }));
-                }
-            }
-            else if (tcpConnection.RemotePort.ToString() == "27005") // TODO: Figure out packet format of these
+            /*else if (tcpConnection.RemotePort.ToString() == "27005") // TODO: Figure out packet format of these
             {
                 var buffer = new byte[data.Length];
                 Buffer.BlockCopy(data, 0, buffer, 0, data.Length);
@@ -143,43 +110,21 @@ namespace VinSeek.Network
                 {
                     _currentVinSeekTab.PacketList.Add(packet);
                 }));
-            }
+            }*/
             else
                 return;
         }
 
         private void DataSent(string connection, TCPConnection tcpConnection, byte[] data)
         {
-            // 27015 = world, 2023 = channel, 27005 = dungeon, 27009 = pingservice
+            // 27015 = world, 27005 = dungeon
             if (tcpConnection.RemotePort.ToString() == "27015")
-            {
-                var completedBuffer = _packetHandlerClientWorld.AnalyzePacket(data, true);
-                if (completedBuffer != null)
-                {
-                    string timestamp = DateTime.Now.ToString("hh:mm:ss.fff");
-                    var packet = new VindictusPacket(completedBuffer, timestamp, "C", "27015");
-                    _currentVinSeekTab.Dispatcher.Invoke(new Action(() =>
-                    {
-                        _currentVinSeekTab.PacketList.Add(packet);
-                    }));
-                }
-            }
-            else if (tcpConnection.RemotePort.ToString() == "27023")
             {
                 var buffer = new byte[data.Length];
                 Buffer.BlockCopy(data, 0, buffer, 0, data.Length);
-                var completedBuffer = _packetHandlerClientChannel.AnalyzePacket(buffer, false);
-                if (completedBuffer != null)
-                {
-                    string timestamp = DateTime.Now.ToString("hh:mm:ss.fff");
-                    var packet = new VindictusPacket(completedBuffer, timestamp, "C", "27023");
-                    _currentVinSeekTab.Dispatcher.Invoke(new Action(() =>
-                    {
-                        _currentVinSeekTab.PacketList.Add(packet);
-                    }));
-                }
+                _packetHandlerClientWorld.AnalyzePacket(buffer, true);
             }
-            else if (tcpConnection.RemotePort.ToString() == "27005") // TODO: Figure out packet format of these
+            /*else if (tcpConnection.RemotePort.ToString() == "27005") // TODO: Figure out packet format of these
             {
                 var buffer = new byte[data.Length];
                 Buffer.BlockCopy(data, 0, buffer, 0, data.Length);
@@ -189,7 +134,7 @@ namespace VinSeek.Network
                 {
                     _currentVinSeekTab.PacketList.Add(packet);
                 }));
-            }
+            }*/
             else
                 return;
         }

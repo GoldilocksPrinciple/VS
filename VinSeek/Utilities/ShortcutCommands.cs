@@ -17,6 +17,8 @@ namespace VinSeek.Utilities
         static RoutedUICommand closeAllTab = new RoutedUICommand("Close All", "CloseAllTab", typeof(ShortcutCommands));
         static RoutedUICommand startCapturePackets = new RoutedUICommand("Start", "StartCapture", typeof(ShortcutCommands));
         static RoutedUICommand stopCapturePackets = new RoutedUICommand("Stop", "StopCapture", typeof(ShortcutCommands));
+        static RoutedUICommand winpcap = new RoutedUICommand("WinPCap", "WinPCap", typeof(ShortcutCommands));
+        static RoutedUICommand ekinar = new RoutedUICommand("Ekinar", "Ekinar", typeof(ShortcutCommands));
         static RoutedUICommand openScript = new RoutedUICommand("Open Script...", "OpenScript", typeof(ShortcutCommands));
         static RoutedUICommand editScript = new RoutedUICommand("Edit Script", "EditScript", typeof(ShortcutCommands));
         static RoutedUICommand runScript = new RoutedUICommand("Run Script", "RunScript", typeof(ShortcutCommands));
@@ -33,6 +35,8 @@ namespace VinSeek.Utilities
         public static RoutedUICommand CloseAllTab { get { return closeAllTab; } }
         public static RoutedUICommand StartCapture { get { return startCapturePackets; } }
         public static RoutedUICommand StopCapture { get { return stopCapturePackets; } }
+        public static RoutedUICommand WinPCap { get { return winpcap; } }
+        public static RoutedUICommand Ekinar { get { return ekinar; } }
         public static RoutedUICommand OpenScript { get { return openScript; } }
         public static RoutedUICommand EditScript { get { return editScript; } }
         public static RoutedUICommand RunScript { get { return runScript; } }

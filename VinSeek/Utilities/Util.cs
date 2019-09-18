@@ -201,5 +201,10 @@ namespace VinSeek.Utilities
                 bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
             return bytes;
         }
+
+        public static bool ByteArrayCompare(byte[] a, byte[] b)
+        {
+            return a.SequenceEqual(b);
+        }
     }
 }

@@ -5,9 +5,9 @@ namespace VinSeek.Views
     /// <summary>
     /// Interaction logic for EditNoteView.xaml
     /// </summary>
-    public partial class EditNoteView : Window
+    public partial class EditNoteWindow : Window
     {
-        public EditNoteView()
+        public EditNoteWindow()
         {
             InitializeComponent();
         }
@@ -17,7 +17,7 @@ namespace VinSeek.Views
         /// </summary>
         /// <param name="text">displayed note message</param>
         /// <param name="info">window's custom title</param>
-        public EditNoteView(string text, string info)
+        public EditNoteWindow(string text, string info)
         {
             InitializeComponent();
 
@@ -42,7 +42,7 @@ namespace VinSeek.Views
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+        private void ButtonOk_OnClick(object sender, RoutedEventArgs e)
         {
             this.Close();
         }

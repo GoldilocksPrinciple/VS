@@ -9,6 +9,7 @@ using VinSeek.Model;
 using VinSeek.Utilities;
 using System.Windows.Interop;
 using System.Runtime.InteropServices;
+using System.Windows.Media.Imaging;
 
 namespace VinSeek.Views
 {
@@ -18,6 +19,8 @@ namespace VinSeek.Views
     public partial class MainWindow : Window
     {
         private TabItem item;
+        public int providerChoice = 0;
+        public HwndSource EkinarPacketSource;
 
         public MainWindow()
         {
@@ -44,6 +47,7 @@ namespace VinSeek.Views
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             base.OnSourceInitialized(e);
+            this.EkinarPacketSource = PresentationSource.FromVisual(this) as HwndSource;
         }
         
         #region Command Handlers
@@ -181,14 +185,49 @@ namespace VinSeek.Views
         /// <param name="e"></param>
         private void StopCaptureCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
+            Debug.WriteLine("Stop Capture.");
+
             if (MainTabControl.Items.Count == 0)
                 return;
 
             if (StartCaptureMenuItem.IsEnabled)
                 return;
 
-            Debug.WriteLine("Stop Capture.");
             ((VinSeekMainTab)item.Content).StopCapturePackets();
+        }
+
+        /// <summary>
+        /// Choose WinPCap as packet provider
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void WinPCapCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            Debug.WriteLine("WinPCap");
+
+            if (!StartCaptureMenuItem.IsEnabled)
+                return;
+
+            WinPCapCheckMark.Source = new BitmapImage(new Uri("pack://application:,,,/Resources/check_icon.ico"));
+            EkinarCheckMark.Source = null;
+            providerChoice = 0;
+        }
+
+        /// <summary>
+        /// Choose Ekinar as packet provider
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void EkinarCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            Debug.WriteLine("Ekinar");
+
+            if (!StartCaptureMenuItem.IsEnabled)
+                return;
+
+            WinPCapCheckMark.Source = null;
+            EkinarCheckMark.Source = new BitmapImage(new Uri("pack://application:,,,/Resources/check_icon.ico"));
+            providerChoice = 1;
         }
 
         /// <summary>

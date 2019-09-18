@@ -134,11 +134,17 @@ namespace VinSeek.Model
                     var guidBytes = new byte[16];
                     System.Buffer.BlockCopy(this.Buffer, this.PacketOffset, guidBytes, 0, 16);
                     this.Guid = BitConverter.ToString(guidBytes).Replace("-", string.Empty);
+
+                    // get opcode map with given GUID
                     foreach (KeyValuePair<string, int> item in PacketIdentifier.Guids)
                     {
                         if (this.Guid == item.Key)
                             this.Opcode = item.Value;
                     }
+
+                    // set different color for packet that has opcode 0 from server
+                    if (this.Direction == "S")
+                        this.Direction = "S0";
                 }
                 else
                     this.Guid = string.Empty;

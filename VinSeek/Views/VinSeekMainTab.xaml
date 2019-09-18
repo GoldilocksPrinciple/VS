@@ -47,6 +47,7 @@
                                 <ContextMenu>
                                     <MenuItem Header="Run a template on this packet" Click="RunTemplate_Click" />
                                     <MenuItem Header="Export this packet to file" Click="ExportPacket_Click"/>
+                                    <MenuItem Header="Export all server packets" Click="ExportServerPackets_Click"/>
                                     <MenuItem Header="Import packet to list" Click="ImportPacket_Click" />
                                     <MenuItem Header="Edit Note" Click="EditNote_Click" />
                                 </ContextMenu>
@@ -64,6 +65,15 @@
                                                     Value="#FFFDDA99" />
                                         </MultiDataTrigger>
 
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding Direction}"
+                                                           Value="S0"/>
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Background"
+                                                    Value="#FF57BEFF" />
+                                        </MultiDataTrigger>
+                                        
                                         <MultiDataTrigger>
                                             <MultiDataTrigger.Conditions>
                                                 <Condition Binding="{Binding Direction}"

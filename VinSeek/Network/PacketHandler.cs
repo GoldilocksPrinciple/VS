@@ -6,58 +6,73 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using VinSeek.Utilities;
+using VinSeek.Views;
+using VinSeek.Model;
 
 namespace VinSeek.Network
 {
-    public class PacketHandler : IDisposable
+    public class PacketHandler
     {
+        private readonly VinSeekMainTab _currentVinSeekTab;
         private byte[] _buffer;
-        private byte[] _packetBuffer;
         private byte[] _decryptedBuffer;
-        private byte[] _newPacketBuffer = null;
-        private int _packetLength;
-        private bool _needSalt = true;
-        public Transformer HandlerTransformer;
+        private byte[] _newPacketBuffer;
+        private bool _needSalt;
+        private string _direction;
+        public Transformer _transformer;
 
-        public PacketHandler(bool needSalt, Transformer transformer)
+        /// <summary>
+        /// Constructor with current used VinSeek tab
+        /// </summary>
+        /// <param name="currentTab">VinSeek tab</param>
+        /// <param name="direction">direction of data stream (server/client)</param>
+        public PacketHandler(VinSeekMainTab currentTab, string direction)
         {
-            _needSalt = needSalt;
-            this.HandlerTransformer = transformer;
+            _currentVinSeekTab = currentTab;
+            _transformer = new Transformer();
+            _direction = direction;
+            _buffer = null;
+            _decryptedBuffer = null;
+            _newPacketBuffer = null;
+            _needSalt = true;
         }
-        
-        public byte[] AnalyzePacket(byte[] data, bool isEncrypted)
+
+        /// <summary>
+        /// Public method for PacketHandler class
+        /// </summary>
+        /// <param name="data">buffer</param>
+        /// <param name="isEncrypted">encrypted flag</param>
+        public void AnalyzePacket(byte[] data, bool isEncrypted)
         {
             if (isEncrypted)
             {
-                if (this.EncryptedPacketReassembled(data))
-                    return _packetBuffer;
-                else
-                    return null;
+                this.DecryptPacketBuffer(data);
             }
             else
             {
-                if (this.RawPacketReassembled(data))
-                    return _packetBuffer;
-                else
-                    return null;
+                // for Channel server's packets
             }
         }
-        
-        private bool EncryptedPacketReassembled(byte[] data)
+
+        /// <summary>
+        /// Decrypt packet buffer
+        /// </summary>
+        /// <param name="data">encrypted packet buffer</param>
+        private void DecryptPacketBuffer(byte[] data)
         {
             _buffer = new byte[data.Length];
             Buffer.BlockCopy(data, 0, _buffer, 0, data.Length);
             if (_needSalt)
             {
                 // set salt
-                HandlerTransformer.Decrypt(_buffer, IPAddress.NetworkToHostOrder(BitConverter.ToInt64(_buffer, 0)));
+                _transformer.Decrypt(_buffer, IPAddress.NetworkToHostOrder(BitConverter.ToInt64(_buffer, 0)));
 
                 _decryptedBuffer = _buffer;
                 _needSalt = false;
             }
             else
             {
-                HandlerTransformer.Decrypt(_buffer);
+                _transformer.Decrypt(_buffer);
 
                 if (_newPacketBuffer != null)
                 {
@@ -73,85 +88,85 @@ namespace VinSeek.Network
                 }
             }
 
-            // get packet length
-            _packetLength = this.GetExpectedLength(_decryptedBuffer);
-
-            // if current buffer not = real packet length
-            if (_decryptedBuffer.Length <= _packetLength)
-            {
-                _newPacketBuffer = new byte[_decryptedBuffer.Length];
-                Buffer.BlockCopy(_decryptedBuffer, 0, _newPacketBuffer, 0, _decryptedBuffer.Length);
-                return false;
-            }
-
-            // get all bytes of the completed packet
-            _packetBuffer = new byte[_packetLength];
-            Buffer.BlockCopy(_decryptedBuffer, 0, _packetBuffer, 0, _packetLength);
-
-            // copy all bytes belong to the new packet to another buffer
-            _newPacketBuffer = new byte[_decryptedBuffer.Length - _packetLength];
-            Buffer.BlockCopy(_decryptedBuffer, _packetLength, _newPacketBuffer, 0, _newPacketBuffer.Length);
-
-            return true;
+            // reassembling packet
+            this.ReassemblingRawPacket(_decryptedBuffer);
         }
 
-        private bool RawPacketReassembled(byte[] data)
+
+        /// <summary>
+        /// Reassembling decrypted packet buffer
+        /// </summary>
+        /// <param name="data">decrypted buffer</param>
+        private void ReassemblingRawPacket(byte[] data)
         {
-            if (_newPacketBuffer != null)
+            if (data == null)
+                return;
+
+            var tempBuffer = new byte[data.Length];
+            Buffer.BlockCopy(data, 0, tempBuffer, 0, data.Length);
+
+            while (true)
             {
-                _buffer = new byte[_newPacketBuffer.Length + data.Length];
-                Buffer.BlockCopy(_newPacketBuffer, 0, _buffer, 0, _newPacketBuffer.Length);
-                Buffer.BlockCopy(data, 0, _buffer, _newPacketBuffer.Length, data.Length);
+                // get packet length
+                var packetFullLength = this.GetExpectedLength(tempBuffer);
+
+                // if current buffer not = real packet length
+                if (packetFullLength == -1 || tempBuffer.Length < packetFullLength)
+                {
+                    _newPacketBuffer = new byte[tempBuffer.Length];
+                    Buffer.BlockCopy(tempBuffer, 0, _newPacketBuffer, 0, tempBuffer.Length);
+                    break;
+                }
+                else
+                {
+                    // get all bytes of the completed packet
+                    var packetBuffer = new byte[packetFullLength];
+                    Buffer.BlockCopy(tempBuffer, 0, packetBuffer, 0, packetFullLength);
+
+                    // add to packet list
+                    string timestamp = DateTime.Now.ToString("hh:mm:ss.fff");
+                    var packet = new VindictusPacket(packetBuffer, timestamp, _direction, "27015");
+                    _currentVinSeekTab.Dispatcher.Invoke(new Action(() =>
+                    {
+                        _currentVinSeekTab.PacketList.Add(packet);
+                    }));
+
+                    // copy all bytes belong to the new packet to tempBuffer, for the loop to continue
+                    var tempBuffer2 = new byte[tempBuffer.Length - packetFullLength];
+                    Buffer.BlockCopy(tempBuffer, packetFullLength, tempBuffer2, 0, tempBuffer2.Length);
+                    tempBuffer = new byte[tempBuffer2.Length];
+                    Buffer.BlockCopy(tempBuffer2, 0, tempBuffer, 0, tempBuffer2.Length);
+                }
             }
-            else
-            {
-                _buffer = new byte[data.Length];
-                Buffer.BlockCopy(data, 0, _buffer, 0, data.Length);
-            }
-
-            // get packet length
-            _packetLength = this.GetExpectedLength(_buffer);
-
-            // if current buffer not = real packet length
-            if (_buffer.Length <= _packetLength)
-            {
-                _newPacketBuffer = new byte[_buffer.Length];
-                Buffer.BlockCopy(_buffer, 0, _newPacketBuffer, 0, _buffer.Length);
-                return false;
-            }
-
-            // get all bytes of the completed packet
-            _packetBuffer = new byte[_packetLength];
-            Buffer.BlockCopy(_buffer, 0, _packetBuffer, 0, _packetLength);
-
-            // copy all bytes belong to the new packet to another buffer
-            _newPacketBuffer = new byte[_buffer.Length - _packetLength];
-            Buffer.BlockCopy(_buffer, _packetLength, _newPacketBuffer, 0, _newPacketBuffer.Length);
-
-            return true;
         }
-        
+
+
+        /// <summary>
+        /// Get packet body length from decrypted packet buffer
+        /// </summary>
+        /// <param name="buffer">decrypted packet buffer</param>
+        /// <returns>packet body length</returns>
         private int GetExpectedLength(byte[] buffer)
         {
+            // sizeof(long) + opcode byte
+            if (buffer.Length < sizeof(long) + 1)
+                return -1;
+
             try
             {
-                var opcodeBytesCount = Util.ReadBytesCount(buffer, sizeof(long));
+                var packetOpcode = Util.ReadVarInt(buffer, sizeof(long), out int opcodeBytesCount);
+                if (buffer.Length < sizeof(long) + opcodeBytesCount)
+                    return -1;
+
                 var packetBodyLength = Util.ReadVarInt(buffer, sizeof(long) + opcodeBytesCount, out int lengthBytesCount);
-                var packetLength = sizeof(long) + opcodeBytesCount + lengthBytesCount + packetBodyLength;
-                return packetLength;
+
+                // return packet full length
+                return sizeof(long) + opcodeBytesCount + lengthBytesCount + packetBodyLength;
             }
             catch (Exception ex)
             {
                 throw ex;
             }
-        }
-
-        public void Dispose()
-        {
-            _buffer = null;
-            _decryptedBuffer = null;
-            _packetBuffer = null;
-            this.HandlerTransformer = null;
         }
     }
 }

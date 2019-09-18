@@ -87,20 +87,20 @@
     <Compile Include="Utilities\ShortcutCommands.cs" />
     <Compile Include="Utilities\Util.cs" />
     <Compile Include="Utilities\XMLImporter.cs" />
-    <Compile Include="Views\EditNoteView.xaml.cs">
-      <DependentUpon>EditNoteView.xaml</DependentUpon>
+    <Compile Include="Views\EditNoteWindow.xaml.cs">
+      <DependentUpon>EditNoteWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\ErrorConsoleView.xaml.cs">
-      <DependentUpon>ErrorConsoleView.xaml</DependentUpon>
+    <Compile Include="Views\ErrorConsoleWindow.xaml.cs">
+      <DependentUpon>ErrorConsoleWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\VinSeekMainTab.xaml.cs">
       <DependentUpon>VinSeekMainTab.xaml</DependentUpon>
     </Compile>
-    <Page Include="Views\EditNoteView.xaml">
+    <Page Include="Views\EditNoteWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\ErrorConsoleView.xaml">
+    <Page Include="Views\ErrorConsoleWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -156,6 +156,11 @@
   <ItemGroup>
     <Resource Include="Resources\vindictus_vinseek_icon.ico" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Resources\check_symbol_small.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\check_icon.ico" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

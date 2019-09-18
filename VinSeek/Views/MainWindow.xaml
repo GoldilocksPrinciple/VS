@@ -23,6 +23,8 @@
         <CommandBinding Command="{x:Static utils:ShortcutCommands.ExitApplication}" Executed="ExitApplicationCommandBinding_Executed" />
         <CommandBinding Command="{x:Static utils:ShortcutCommands.StartCapture}" Executed="StartCaptureCommandBinding_Executed" />
         <CommandBinding Command="{x:Static utils:ShortcutCommands.StopCapture}" Executed="StopCaptureCommandBinding_Executed" />
+        <CommandBinding Command="{x:Static utils:ShortcutCommands.WinPCap}" Executed="WinPCapCommandBinding_Executed" />
+        <CommandBinding Command="{x:Static utils:ShortcutCommands.Ekinar}" Executed="EkinarCommandBinding_Executed" />
         <CommandBinding Command="{x:Static utils:ShortcutCommands.OpenScript}" Executed="OpenScriptCommandBinding_Executed" />
         <CommandBinding Command="{x:Static utils:ShortcutCommands.EditScript}" Executed="EditScriptCommandBinding_Executed" />
         <CommandBinding Command="{x:Static utils:ShortcutCommands.RunScript}" Executed="RunScriptCommandBinding_Executed" />
@@ -64,6 +66,18 @@
                 <MenuItem Header="Capture">
                     <MenuItem x:Name="StartCaptureMenuItem" Command="{x:Static utils:ShortcutCommands.StartCapture}" InputGestureText="Ctrl+E" />
                     <MenuItem Command="{x:Static utils:ShortcutCommands.StopCapture}" InputGestureText="Ctrl+Shift+E" />
+                </MenuItem>
+                <MenuItem Header="Provider">
+                    <MenuItem Command="{x:Static utils:ShortcutCommands.WinPCap}">
+                        <MenuItem.Icon>
+                            <Image x:Name="WinPCapCheckMark" Margin="5,0,0,0" Height="10" Source="pack://application:,,,/Resources/check_icon.ico"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem x:Name="Ekinar" Command="{x:Static utils:ShortcutCommands.Ekinar}">
+                        <MenuItem.Icon>
+                            <Image x:Name="EkinarCheckMark" Margin="5,0,0,0" Height="10"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
                 </MenuItem>
                 <MenuItem Header="Scripts">
                     <MenuItem Command="{x:Static utils:ShortcutCommands.OpenScript}" InputGestureText="Ctrl+F7" />

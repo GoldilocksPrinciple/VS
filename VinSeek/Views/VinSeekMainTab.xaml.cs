@@ -29,6 +29,7 @@ namespace VinSeek.Views
     {
         private MainWindow _mainWindow = System.Windows.Application.Current.MainWindow as MainWindow;
         public ObservableCollection<VindictusPacket> PacketList;
+        public List<VindictusPacket> ServerPacketList;
         private PacketFilter _packetFilter;
         private MachinaWorker _captureWorker;
         private Thread _captureThread;
@@ -37,6 +38,7 @@ namespace VinSeek.Views
         {
             InitializeComponent();
             this.PacketList = new ObservableCollection<VindictusPacket>();
+            this.ServerPacketList = new List<VindictusPacket>();
             PacketListView.ItemsSource = this.PacketList;
             _packetFilter = new PacketFilter(this, this.PacketList);
         }
@@ -47,21 +49,50 @@ namespace VinSeek.Views
         /// </summary>
         public void StartCapturePackets()
         {
-            if (_captureWorker != null)
-                return;
-
             this.PacketList = new ObservableCollection<VindictusPacket>();
             PacketListView.ItemsSource = this.PacketList;
             _packetFilter = new PacketFilter(this, this.PacketList);
 
-            _captureWorker = new MachinaWorker(this);
-            _captureThread = new Thread(_captureWorker.Start);
-            _captureThread.Start();
-
-            Dispatcher.Invoke((Action)(() =>
+            if (_mainWindow.providerChoice == 0) // using winpcap
             {
-                _mainWindow.StartCaptureMenuItem.IsEnabled = false;
-            }));
+                if (_captureWorker != null)
+                    return;
+
+                _captureWorker = new MachinaWorker(this);
+                _captureThread = new Thread(_captureWorker.Start);
+                _captureThread.Start();
+
+                Dispatcher.Invoke((Action)(() =>
+                {
+                    _mainWindow.StartCaptureMenuItem.IsEnabled = false;
+                }));
+            }
+            else if (_mainWindow.providerChoice == 1) // using Ekinar
+            {
+                Process[] ekinarProcess = Process.GetProcessesByName("Ekinar");
+                Console.WriteLine(ekinarProcess.Count());
+
+                if (ekinarProcess.Length <= 0)
+                {
+                    Dispatcher.Invoke((Action)(() =>
+                    {
+                        this.UpdateCaptureProcessInfo("Ekinar is not running", false);
+                        _mainWindow.StartCaptureMenuItem.IsEnabled = true;
+                    }));
+                }
+                else
+                {
+                    _mainWindow.EkinarPacketSource.AddHook(WndProc);
+
+                    Dispatcher.Invoke((Action)(() =>
+                    {
+                        this.UpdateCaptureProcessInfo("Logging packet from Ekinar", true);
+                        _mainWindow.StartCaptureMenuItem.IsEnabled = false;
+                    }));
+                }
+            }
+            else
+                return;
         }
 
         /// <summary>
@@ -69,30 +100,81 @@ namespace VinSeek.Views
         /// </summary>
         public void StopCapturePackets()
         {
-            if (_captureWorker == null)
-                return;
-
-            if (!_captureWorker.foundProcessId)
+            if (_mainWindow.providerChoice == 0) // using winpcap
             {
-                _captureWorker.Stop();
+                if (_captureWorker == null)
+                    return;
 
+                if (!_captureWorker.foundProcessId)
+                {
+                    _captureWorker.Stop();
+
+                }
+                else
+                {
+                    _captureWorker.Stop();
+                    _captureThread.Join();
+                }
+
+                _captureWorker = null;
+
+                Dispatcher.Invoke((Action)(() =>
+                {
+                    _mainWindow.StartCaptureMenuItem.IsEnabled = true;
+                }));
+            }
+            else if (_mainWindow.providerChoice == 1) // using ekinar
+            {
+                _mainWindow.EkinarPacketSource.RemoveHook(WndProc);
+
+                Dispatcher.Invoke((Action)(() =>
+                {
+                    this.UpdateCaptureProcessInfo("Stopped logging packet from Ekinar", false);
+                    _mainWindow.StartCaptureMenuItem.IsEnabled = true;
+                }));
             }
             else
-            {
-                _captureWorker.Stop();
-                _captureThread.Join();
-            }
-            
-            _captureWorker = null;
-
-            Dispatcher.Invoke((Action)(() =>
-            {
-                _mainWindow.StartCaptureMenuItem.IsEnabled = true;
-            }));
+                return;
         }
         #endregion
 
-        #region Export, Import, Edit Packets
+        #region Ekinar interops
+        /// <summary>
+        /// Processing data received from Ekinar
+        /// </summary>
+        /// <param name="hwnd"></param>
+        /// <param name="msg"></param>
+        /// <param name="wParam"></param>
+        /// <param name="lParam"></param>
+        /// <param name="handled"></param>
+        /// <returns></returns>
+        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            if (msg == 0x004A)
+            {
+                string timestamp = DateTime.Now.ToString("hh:mm:ss.fff");
+                byte[] buffer = new Byte[Marshal.ReadInt32(lParam, IntPtr.Size)];
+                IntPtr dataPtr = Marshal.ReadIntPtr(lParam, IntPtr.Size * 2);
+                Marshal.Copy(dataPtr, buffer, 0, buffer.Length);
+
+                // read packet's direction from buffer
+                var d = new byte[1];
+                Buffer.BlockCopy(buffer, 0, d, 0, 1);
+                var direction = System.Text.Encoding.ASCII.GetString(d);
+
+                // read real packet's buffer
+                var packBuffer = new byte[buffer.Length - 1];
+                Buffer.BlockCopy(buffer, 1, packBuffer, 0, buffer.Length - 1);
+
+                var packet = new VindictusPacket(packBuffer, timestamp, direction, "27015");
+                this.PacketList.Add(packet);
+            }
+            handled = false;
+            return IntPtr.Zero;
+        }
+        #endregion
+
+        #region Export, Import, Edit Packet Note
         /// <summary>
         /// Export packet button click event handler
         /// </summary>
@@ -148,6 +230,53 @@ namespace VinSeek.Views
         }
 
         /// <summary>
+        /// Export all server packets
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ExportServerPackets_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.ServerPacketList.Count < 1)
+                return;
+
+            CommonOpenFileDialog exportDiag = new CommonOpenFileDialog();
+            exportDiag.IsFolderPicker = true;
+            exportDiag.Title = "Select a folder to save packet as binary files";
+
+            Dispatcher.Invoke((Action)(() =>
+            {
+                // do nothing if no file is selected
+                if ((exportDiag.ShowDialog() == CommonFileDialogResult.Ok ? exportDiag.FileName : null) != null)
+                {
+                    int i = 1;
+                    var basePath = exportDiag.FileName;
+                    var textPath = System.IO.Path.Combine(basePath, "result.txt");
+                    string savePath;
+                    using (System.IO.StreamWriter resultFile = new System.IO.StreamWriter(textPath))
+                    {
+                        foreach (var packet in this.ServerPacketList)
+                        {
+                            if (packet.Guid == string.Empty)
+                            {
+                                savePath = System.IO.Path.Combine(basePath, i + $"_{packet.Opcode}.bin");
+                                resultFile.WriteLine(i + $"_{packet.Opcode}.bin\", {packet.Opcode});");
+                            }
+                            else
+                            {
+                                savePath = System.IO.Path.Combine(basePath, i + "_0.bin");
+                                resultFile.WriteLine(i + $"_0.bin\", 0);");
+                            }
+                            File.WriteAllBytes(savePath, packet.Body);
+                            i++;
+                        }
+                    }
+                    System.Windows.MessageBox.Show($"Packets successfully saved to {basePath}.", "VinSeek", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                    exportDiag.Dispose();
+                }
+            }));
+        }
+
+        /// <summary>
         /// Import packet button clicked event handler
         /// </summary>
         /// <param name="sender"></param>
@@ -196,7 +325,7 @@ namespace VinSeek.Views
 
             Dispatcher.Invoke((Action)(() =>
             {
-                PacketList[index].Comment = new EditNoteView(PacketList[index].Comment,
+                PacketList[index].Comment = new EditNoteWindow(PacketList[index].Comment,
                     "Enter text to edit comment/note for this packet. Click OK to save changes.").ShowDialog();
             }));
         }
@@ -221,6 +350,9 @@ namespace VinSeek.Views
                         vindiPacket = new VindictusPacket(packet.Buffer, packet.Time, packet.Direction, packet.ServerPort);
 
                     this.PacketList.Add(vindiPacket);
+
+                    if (vindiPacket.Direction == "S")
+                        this.ServerPacketList.Add(vindiPacket);
                 }
             }
             catch (Exception ex)
@@ -296,7 +428,7 @@ namespace VinSeek.Views
                 }));
             }
         }
-        
+
         private void FilterBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
@@ -331,7 +463,7 @@ namespace VinSeek.Views
             }));
             PacketListView.ItemsSource = this.PacketList;
         }
-        
+
         #endregion
 
         #region Hexbox
@@ -402,7 +534,7 @@ namespace VinSeek.Views
             {
                 if (this.PacketList.Count == 0)
                     return;
-                
+
                 this.UpdateSelectedItemHexBox(PacketListView.SelectedItem);
             }));
         }
