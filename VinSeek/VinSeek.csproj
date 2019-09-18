@@ -157,9 +157,6 @@
     <Resource Include="Resources\vindictus_vinseek_icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\check_symbol_small.ico" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Resources\check_icon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
