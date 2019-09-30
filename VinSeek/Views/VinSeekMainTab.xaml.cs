@@ -70,25 +70,29 @@ namespace VinSeek.Views
             else if (_mainWindow.providerChoice == 1) // using Ekinar
             {
                 Process[] ekinarProcess = Process.GetProcessesByName("Ekinar");
-                Console.WriteLine(ekinarProcess.Count());
 
                 if (ekinarProcess.Length <= 0)
                 {
-                    Dispatcher.Invoke((Action)(() =>
+                    if (ekinarProcess.Length <= 0)
                     {
-                        this.UpdateCaptureProcessInfo("Ekinar is not running", false);
+                        Dispatcher.Invoke((Action)(() =>
+                    {
+                        this.UpdateCaptureProcessInfo("No proxy is currently running", false);
                         _mainWindow.StartCaptureMenuItem.IsEnabled = true;
                     }));
+                    }
+
                 }
                 else
                 {
-                    _mainWindow.EkinarPacketSource.AddHook(WndProc);
+                    _mainWindow.EkinarPacketSource.AddHook(EkinarWndProc);
 
                     Dispatcher.Invoke((Action)(() =>
                     {
                         this.UpdateCaptureProcessInfo("Logging packet from Ekinar", true);
                         _mainWindow.StartCaptureMenuItem.IsEnabled = false;
                     }));
+
                 }
             }
             else
@@ -125,7 +129,7 @@ namespace VinSeek.Views
             }
             else if (_mainWindow.providerChoice == 1) // using ekinar
             {
-                _mainWindow.EkinarPacketSource.RemoveHook(WndProc);
+                _mainWindow.EkinarPacketSource.RemoveHook(EkinarWndProc);
 
                 Dispatcher.Invoke((Action)(() =>
                 {
@@ -138,7 +142,7 @@ namespace VinSeek.Views
         }
         #endregion
 
-        #region Ekinar interops
+        #region Proxies interops (Ekinar)
         /// <summary>
         /// Processing data received from Ekinar
         /// </summary>
@@ -148,7 +152,7 @@ namespace VinSeek.Views
         /// <param name="lParam"></param>
         /// <param name="handled"></param>
         /// <returns></returns>
-        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        private IntPtr EkinarWndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
             if (msg == 0x004A)
             {
@@ -259,7 +263,10 @@ namespace VinSeek.Views
                             if (packet.Guid == string.Empty)
                             {
                                 savePath = System.IO.Path.Combine(basePath, i + $"_{packet.Opcode}.bin");
-                                resultFile.WriteLine(i + $"_{packet.Opcode}.bin\", {packet.Opcode});");
+                                if (packet.PacketName == "UNKNOWN")
+                                    resultFile.WriteLine(i + $"_{packet.Opcode}.bin\", {packet.Opcode});");
+                                else
+                                    resultFile.WriteLine(i + $"_{packet.Opcode}.bin\", {packet.Opcode}); //{packet.PacketName}");
                             }
                             else
                             {
@@ -351,7 +358,7 @@ namespace VinSeek.Views
 
                     this.PacketList.Add(vindiPacket);
 
-                    if (vindiPacket.Direction == "S")
+                    if (vindiPacket.Direction == "S" || vindiPacket.Direction == "S0")
                         this.ServerPacketList.Add(vindiPacket);
                 }
             }

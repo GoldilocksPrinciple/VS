@@ -100,7 +100,8 @@ namespace VinSeek.Network
                 Buffer.BlockCopy(data, 0, buffer, 0, data.Length);
                 _packetHandlerServerWorld.AnalyzePacket(buffer, true);
             }
-            /*else if (tcpConnection.RemotePort.ToString() == "27005") // TODO: Figure out packet format of these
+
+            /*if (tcpConnection.RemotePort.ToString() == "27005") // TODO: Figure out packet format of these
             {
                 var buffer = new byte[data.Length];
                 Buffer.BlockCopy(data, 0, buffer, 0, data.Length);
@@ -111,8 +112,13 @@ namespace VinSeek.Network
                     _currentVinSeekTab.PacketList.Add(packet);
                 }));
             }*/
-            else
-                return;
+
+            /*if (tcpConnection.RemotePort.ToString() == "27023")
+            {
+                var buffer = new byte[data.Length];
+                Buffer.BlockCopy(data, 0, buffer, 0, data.Length);
+                _packetHandlerServerWorld.AnalyzePacket(buffer, false);
+            }*/
         }
 
         private void DataSent(string connection, TCPConnection tcpConnection, byte[] data)
@@ -124,7 +130,8 @@ namespace VinSeek.Network
                 Buffer.BlockCopy(data, 0, buffer, 0, data.Length);
                 _packetHandlerClientWorld.AnalyzePacket(buffer, true);
             }
-            /*else if (tcpConnection.RemotePort.ToString() == "27005") // TODO: Figure out packet format of these
+
+            /*if (tcpConnection.RemotePort.ToString() == "27005") // TODO: Figure out packet format of these
             {
                 var buffer = new byte[data.Length];
                 Buffer.BlockCopy(data, 0, buffer, 0, data.Length);
@@ -135,8 +142,13 @@ namespace VinSeek.Network
                     _currentVinSeekTab.PacketList.Add(packet);
                 }));
             }*/
-            else
-                return;
+
+            /*if (tcpConnection.RemotePort.ToString() == "27023")
+            {
+                var buffer = new byte[data.Length];
+                Buffer.BlockCopy(data, 0, buffer, 0, data.Length);
+                _packetHandlerClientWorld.AnalyzePacket(buffer, false);
+            }*/
         }
     }
 }

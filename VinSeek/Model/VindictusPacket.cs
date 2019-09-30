@@ -149,7 +149,7 @@ namespace VinSeek.Model
                 else
                     this.Guid = string.Empty;
 
-                if (this.ServerPort == "27023")
+                if (this.ServerPort != "27015")
                     this.PacketName = "CHANNEL_SERVER";
                 else
                 {

@@ -50,7 +50,7 @@ namespace VinSeek.Network
             }
             else
             {
-                // for Channel server's packets
+                this.ReassemblingRawPacket(data, false);
             }
         }
 
@@ -89,7 +89,7 @@ namespace VinSeek.Network
             }
 
             // reassembling packet
-            this.ReassemblingRawPacket(_decryptedBuffer);
+            this.ReassemblingRawPacket(_decryptedBuffer, true);
         }
 
 
@@ -97,18 +97,38 @@ namespace VinSeek.Network
         /// Reassembling decrypted packet buffer
         /// </summary>
         /// <param name="data">decrypted buffer</param>
-        private void ReassemblingRawPacket(byte[] data)
+        private void ReassemblingRawPacket(byte[] data, bool isEncrypted)
         {
             if (data == null)
                 return;
 
-            var tempBuffer = new byte[data.Length];
-            Buffer.BlockCopy(data, 0, tempBuffer, 0, data.Length);
+            byte[] tempBuffer;
+
+            if (isEncrypted)
+            {
+                tempBuffer = new byte[data.Length];
+                Buffer.BlockCopy(data, 0, tempBuffer, 0, data.Length);
+            }
+            else
+            {
+                if (_newPacketBuffer == null)
+                {
+                    tempBuffer = new byte[data.Length];
+                    Buffer.BlockCopy(data, 0, tempBuffer, 0, data.Length);
+                }
+                else
+                {
+                    tempBuffer = new byte[data.Length + _newPacketBuffer.Length];
+                    Buffer.BlockCopy(_newPacketBuffer, 0, tempBuffer, 0, _newPacketBuffer.Length);
+                    Buffer.BlockCopy(data, 0, tempBuffer, _newPacketBuffer.Length, data.Length);
+                }
+            }
 
             while (true)
             {
                 // get packet length
                 var packetFullLength = this.GetExpectedLength(tempBuffer);
+                Console.WriteLine(packetFullLength);
 
                 // if current buffer not = real packet length
                 if (packetFullLength == -1 || tempBuffer.Length < packetFullLength)
@@ -125,7 +145,12 @@ namespace VinSeek.Network
 
                     // add to packet list
                     string timestamp = DateTime.Now.ToString("hh:mm:ss.fff");
-                    var packet = new VindictusPacket(packetBuffer, timestamp, _direction, "27015");
+                    VindictusPacket packet;
+                    if (isEncrypted)
+                        packet = new VindictusPacket(packetBuffer, timestamp, _direction, "27015");
+                    else
+                        packet = new VindictusPacket(packetBuffer, timestamp, _direction, "27023");
+
                     _currentVinSeekTab.Dispatcher.Invoke(new Action(() =>
                     {
                         _currentVinSeekTab.PacketList.Add(packet);
